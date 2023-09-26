@@ -4,6 +4,7 @@
 
 * OS: Linux Ubuntu 22.04
 * Compiler: g++ 11.4.0, C++17
+* Package Manager: vcpkg
 * Library: freeglut, glew, glm
 
 ## 2. Build & Run
