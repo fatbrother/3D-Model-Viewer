@@ -11,6 +11,8 @@
 // C++ STL headers.
 #include <bits/stdc++.h>
 
+namespace opengl_homework {
+
 // VertexPTN Declarations.
 struct VertexPTN
 {
@@ -68,3 +70,5 @@ private:
 	int numTriangles;
 	glm::vec3 objCenter;
 };
+
+}

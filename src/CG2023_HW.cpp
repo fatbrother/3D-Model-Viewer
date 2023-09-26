@@ -16,7 +16,7 @@
 // Global variables.
 const int screenWidth = 600;
 const int screenHeight = 600;
-std::unique_ptr<TriangleMesh> mesh = nullptr;
+std::unique_ptr<opengl_homework::TriangleMesh> mesh = nullptr;
 
 // Function prototypes.
 void SetupRenderState();
@@ -104,7 +104,7 @@ void SetupScene()
 {
     auto modelPath = std::filesystem::path("models/ColorCube/ColorCube.obj");
 
-    mesh = std::make_unique<TriangleMesh>();
+    mesh = std::make_unique<opengl_homework::TriangleMesh>();
     mesh->LoadFromFile(modelPath);
  
     // Please DO NOT TOUCH the following code.

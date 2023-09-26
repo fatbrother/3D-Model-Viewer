@@ -1,5 +1,7 @@
 #include "TriangleMesh.h"
 
+using namespace opengl_homework;
+
 // Desc: Constructor of a triangle mesh.
 TriangleMesh::TriangleMesh()
 {
