@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/CG2023_HW1.dir/src/CG2023_HW1.cpp.o CMakeFiles/CG2023_HW1.dir/src/TriangleMesh.cpp.o -o bin/CG2023_HW1  -lFreeGLUT::freeglut ../vcpkg/installed/x64-linux/debug/lib/libGLEWd.a /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libGLU.so /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so 
