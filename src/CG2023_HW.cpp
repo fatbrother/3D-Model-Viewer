@@ -34,9 +34,7 @@ void RenderSceneCB()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    // Render the triangle mesh.
-    // Add your code here.
-    // ...
+    mesh->Render();
     
     glutSwapBuffers();
 }
@@ -83,9 +81,8 @@ void ProcessKeysCB(unsigned char key, int x, int y)
 
 void ReleaseResources()
 {
-    // Release memory if needed.
-    // Add your code here.
-    // ...
+    // Release the memory allocated for the triangle mesh.
+    mesh.reset();
 }
 
 void SetupRenderState()
@@ -105,7 +102,7 @@ void SetupRenderState()
 // You can alter the parameters for dynamically loading a model.
 void SetupScene()
 {
-    auto modelPath = std::filesystem::path("../models/Bunny.obj");
+    auto modelPath = std::filesystem::path("models/ColorCube/ColorCube.obj");
 
     mesh = std::make_unique<TriangleMesh>();
     mesh->LoadFromFile(modelPath);

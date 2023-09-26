@@ -1,5 +1,4 @@
-#ifndef TRIANGLEMESH_H
-#define TRIANGLEMESH_H
+#pragma once
 
 // OpenGL and FreeGlut headers.
 #include <GL/glew.h>
@@ -44,6 +43,9 @@ public:
 	// Create vertex and index buffers.
 	void CreateBuffers();
 
+	// Render the mesh.
+	void Render() const;
+
 	// Apply transform on CPU.
 	void ApplyTransformCPU(const glm::mat4x4& mvpMatrix);
 
@@ -66,6 +68,3 @@ private:
 	int numTriangles;
 	glm::vec3 objCenter;
 };
-
-
-#endif
