@@ -9,40 +9,29 @@
 
 ## 2. Build & Run
 
-### 2.1. Install Vcpkg
-
-```bash 
-git clone https://github.com/Microsoft/vcpkg.git
-./vcpkg/bootstrap-vcpkg.sh
-```
-
-### 2.2. Install Library
-
-First, install necessary library.
-```bash
-sudo apt-get install libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxrandr-dev libxxf86vm-dev -y
-```
-
-Then, install freeglut, glew, glm.
-```bash
-./vcpkg/vcpkg install freeglut glew glm
-```
-
-### 2.3. Build
+### 2.1. Clone repository
 
 ```bash
+git clone https://github.com/fatbrother/OpenGL-HW.git
+```
+
+### 2.2. Build and Run
+
+```bash
+cd OpenGL-HW
 ./build.sh
-```
-
-### 2.4. Run
-
-```bash
 ./build/bin/CG2023_HW
 ```
 
-## 3. Change details
+## 3. Result
 
-### 3.1. Change raw pointer to smart pointer
+### 4.1. Bunny
+
+![Bunny](./images/bunny.png)
+
+## 4. Change details
+
+### 4.1. Change raw pointer to smart pointer
 
 ```diff
 - TriangleMesh* mesh = nullptr;
@@ -54,14 +43,56 @@ Then, install freeglut, glew, glm.
 + mesh = std::make_unique<TriangleMesh>();
 ```
 
-### 3.2. Change string path to c++17 filesystem::path
+### 4.2. Change string path to c++17 filesystem::path
 
 ```diff
 - std::string path = "../models/Bunny.obj";
 + auto modelPath = std::filesystem::path("../models/Bunny.obj");
 ```
 
-## 4. Commit message
+### 4.3. Change ifndef to pragma once
+
+```diff
+- #ifndef TRIANGLEMESH_H
+- #define TRIANGLEMESH_H
++ #pragma once
+```
+
+### 4.4. Add namespace
+
+```diff
++ namespace opengl_homework {
+```
+
+## 5. Project structure
+
+```
+.
+├── CMakeLists.txt
+├── build
+│   ├── CMakeCache.txt
+│   ├── CMakeFiles
+│   ├── Makefile
+│   ├── bin
+│   └── cmake_install.cmake
+├── build.sh
+├── images
+├── models
+│   ├── Bunny
+│   ├── ColorCube
+│   ├── Forklift
+│   ├── Koffing
+│   ├── Pillows
+│   ├── Rose
+│   └── Soccer
+├── readme.md
+├── src
+│   ├── CG2023_HW.cpp
+│   ├── TriangleMesh.cpp
+│   └── TriangleMesh.h
+└── vcpkg
+```
+## 5. Commit message
 
 feat: 新增/修改功能 (feature)  
 fix: 修補 bug (bug fix)  
