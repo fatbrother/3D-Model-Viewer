@@ -29,6 +29,24 @@ cd OpenGL-HW
 
 ![Bunny](./images/bunny.png)
 
+## 4.2. ColorCube
+![ColorCube](./images/color_cube.png)
+
+## 4.3. Forklift
+![Forklift](./images/forklift.png)
+
+## 4.4. Koffing
+![Koffing](./images/koffing.png)
+
+## 4.5. Pillows
+![Pillows](./images/pillows.png)
+
+## 4.6. Rose
+![Rose](./images/rose.png)
+
+## 4.7. Soccer
+![Soccer](./images/soccer.png)
+
 ## 4. Change details
 
 ### 4.1. Change raw pointer to smart pointer
@@ -92,7 +110,7 @@ cd OpenGL-HW
 │   └── TriangleMesh.h
 └── vcpkg
 ```
-## 5. Commit message
+## 6. Commit message
 
 feat: 新增/修改功能 (feature)  
 fix: 修補 bug (bug fix)  
