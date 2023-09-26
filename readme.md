@@ -25,26 +25,26 @@ cd OpenGL-HW
 
 ## 3. Result
 
-### 4.1. Bunny
+### 3.1. Bunny
 
 ![Bunny](./images/bunny.png)
 
-## 4.2. ColorCube
+## 3.2. ColorCube
 ![ColorCube](./images/color_cube.png)
 
-## 4.3. Forklift
+## 3.3. Forklift
 ![Forklift](./images/forklift.png)
 
-## 4.4. Koffing
+## 3.4. Koffing
 ![Koffing](./images/koffing.png)
 
-## 4.5. Pillows
+## 3.5. Pillows
 ![Pillows](./images/pillows.png)
 
-## 4.6. Rose
+## 3.6. Rose
 ![Rose](./images/rose.png)
 
-## 4.7. Soccer
+## 3.7. Soccer
 ![Soccer](./images/soccer.png)
 
 ## 4. Change details
