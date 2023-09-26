@@ -1,0 +1,3 @@
+/home/fatbrother/Desktop/OpenGL/build/CMakeFiles/CG2023_HW.dir
+/home/fatbrother/Desktop/OpenGL/build/CMakeFiles/edit_cache.dir
+/home/fatbrother/Desktop/OpenGL/build/CMakeFiles/rebuild_cache.dir

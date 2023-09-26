@@ -1,0 +1,35 @@
+newmtl redMtl
+  Ns 30.0000
+  Ka 0 0 0
+  Kd 1 0 0
+  Ks 1 1 1
+
+newmtl greenMtl
+  Ns 30.0000
+  Ka 0 0 0
+  Kd 0 1 0
+  Ks 1 1 1
+
+newmtl blueMtl
+  Ns 30.0000
+  Ka 0 0 0
+  Kd 0 0 1
+  Ks 1 1 1
+
+newmtl cyanMtl
+  Ns 30.0000
+  Ka 0 0 0
+  Kd 0 1 1
+  Ks 1 1 1
+
+newmtl magentaMtl
+  Ns 30.0000
+  Ka 0 0 0
+  Kd 1 0 1
+  Ks 1 1 1
+
+newmtl yellowMtl
+  Ns 30.0000
+  Ka 0 0 0
+  Kd 1 1 0
+  Ks 1 1 1
