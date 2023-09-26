@@ -16,18 +16,18 @@
 // Global variables.
 const int screenWidth = 600;
 const int screenHeight = 600;
+std::vector<std::string> objNames;
 std::unique_ptr<opengl_homework::TriangleMesh> mesh = nullptr;
 
 // Function prototypes.
 void SetupRenderState();
-void SetupScene();
+void SetupScene(std::string objName);
 void ReleaseResources();
 void RenderSceneCB();
 void ReshapeCB(int, int);
 void ProcessSpecialKeysCB(int, int, int);
 void ProcessKeysCB(unsigned char, int, int);
-
-
+void SetupMenu();
 
 // Callback function for glutDisplayFunc.
 void RenderSceneCB()
@@ -82,7 +82,8 @@ void ProcessKeysCB(unsigned char key, int x, int y)
 void ReleaseResources()
 {
     // Release the memory allocated for the triangle mesh.
-    mesh.reset();
+    mesh.reset(nullptr);
+    objNames.clear();
 }
 
 void SetupRenderState()
@@ -100,9 +101,9 @@ void SetupRenderState()
 
 // Load a model from obj file and apply transformation.
 // You can alter the parameters for dynamically loading a model.
-void SetupScene()
+void SetupScene(std::string objName = "Bunny")
 {
-    auto modelPath = std::filesystem::path("models/ColorCube/ColorCube.obj");
+    auto modelPath = std::filesystem::path("models") / objName / (objName + ".obj");;
 
     mesh = std::make_unique<opengl_homework::TriangleMesh>();
     mesh->LoadFromFile(modelPath);
@@ -133,6 +134,25 @@ void SetupScene()
     mesh->CreateBuffers();
 }
 
+void SetupMenu()
+{
+    // Get all .obj in the models/obj_name/object.obj.
+    for (const auto& entry : std::filesystem::directory_iterator("models")) {
+        if (entry.is_directory()) {
+            objNames.push_back(entry.path().filename().string());
+        }
+    }
+    // Create the main menu.
+    glutCreateMenu([](int value) {
+        mesh.reset(nullptr);
+        SetupScene(objNames[value - 1]);
+    });
+    
+    for (int i = 0; i < objNames.size(); i++) 
+        glutAddMenuEntry(objNames[i].c_str(), i + 1);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
 int main(int argc, char** argv)
 {
     // Setting window properties.
@@ -154,6 +174,7 @@ int main(int argc, char** argv)
     // Initialization.
     SetupRenderState();
     SetupScene();
+    SetupMenu();
 
     // Register callback functions.
     glutDisplayFunc(RenderSceneCB);
