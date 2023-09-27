@@ -31,7 +31,9 @@ struct VertexPTN
 	glm::vec2 texcoord;
 };
 
-// TriangleMesh Declarations.
+/**
+ * @brief TriangleMesh class.
+*/
 class TriangleMesh
 {
 public:
@@ -39,16 +41,31 @@ public:
 	TriangleMesh();
 	~TriangleMesh();
 	
-	// Load the model from an *.OBJ file.
+	/**
+	 * @brief Load a model from obj file.
+	 * 
+	 * @param filePath Path to the obj file.
+	 * @param normalized Normalize the model to fit in a unit cube.
+	 * 
+	 * @return true if the model is loaded successfully.
+	*/
 	bool LoadFromFile(const std::filesystem::path& filePath, const bool normalized = true);
 	
-	// Create vertex and index buffers.
+	/**
+	 * @brief Create buffers for rendering.
+	*/
 	void CreateBuffers();
 
-	// Render the mesh.
+	/**
+	 * @brief Render the mesh.
+	*/
 	void Render() const;
 
-	// Apply transform on CPU.
+	/**
+	 * @brief Apply transformation to the mesh on CPU.
+	 * 
+	 * @param mvpMatrix Model-view-projection matrix.
+	*/
 	void ApplyTransformCPU(const glm::mat4x4& mvpMatrix);
 
 	int GetNumVertices() const { return numVertices; }

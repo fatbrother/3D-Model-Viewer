@@ -1,12 +1,19 @@
 #pragma once
 
-#include <bits/stdc++.h>
-
+// My headers.
 #include "TriangleMesh.h"
 
 namespace opengl_homework
 {
-    
+
+/**
+ * @brief ScreenManager class.
+ * 
+ * This class manages the rendering loop and the user input.
+ * It is implemented as a singleton.
+ * 
+ * @note Call GetInstance() to get the singleton instance, and call Start() to start the rendering loop.
+*/
 class ScreenManager
 {
 public:
