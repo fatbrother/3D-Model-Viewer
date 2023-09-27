@@ -51,12 +51,21 @@ private:
     void RenderSceneCB();
     void MenuCB(int);
 
-    // Callback functions.
-    static void RenderSceneCBWrapper() { s_instance->RenderSceneCB(); }
-    static void ReshapeCBWrapper(int w, int h) { s_instance->ReshapeCB(w, h); }
-    static void ProcessSpecialKeysCBWrapper(int key, int x, int y) { s_instance->ProcessSpecialKeysCB(key, x, y); }
-    static void ProcessKeysCBWrapper(unsigned char key, int x, int y) { s_instance->ProcessKeysCB(key, x, y); }
-    static void MenuCBWrapper(int value) { s_instance->MenuCB(value); }
+    /**
+     * @brief Static wrapper for member functions.
+     * 
+     * @tparam T 
+     * @tparam Args 
+     * @param func 
+     * @param args 
+     * 
+     * @note Usage: [](Args... args){ StaticWrapper(&T::MemberFunction, args...); }
+     */
+    template <typename T, typename... Args>
+    static void StaticWrapper(void (T::*func)(Args...), Args... args)
+    {
+        (s_instance->*func)(args...);
+    }
 
 private:
     static ScreenManager* s_instance;

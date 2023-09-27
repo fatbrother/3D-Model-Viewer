@@ -126,9 +126,6 @@ void TriangleMesh::CreateBuffers()
 // Desc: Render the mesh.
 void TriangleMesh::Render() const
 {
-	glBindBuffer(GL_ARRAY_BUFFER, vboId);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
-
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, position));
 	glEnableVertexAttribArray(1);
@@ -150,9 +147,7 @@ void TriangleMesh::ApplyTransformCPU(const glm::mat4x4& mvpMatrix)
         glm::vec4 p = mvpMatrix * glm::vec4(vertices[i].position, 1.0f);
         if (p.w != 0.0f) {
             float inv = 1.0f / p.w; 
-            vertices[i].position.x = p.x * inv;
-            vertices[i].position.y = p.y * inv;
-            vertices[i].position.z = p.z * inv;
+            vertices[i].position = p * inv;
         }
     }
 }
