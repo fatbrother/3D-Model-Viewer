@@ -97,15 +97,11 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 		glm::vec3 minPos = glm::vec3(1e9, 1e9, 1e9);
 		glm::vec3 maxPos = glm::vec3(-1e9, -1e9, -1e9);
 		for (int i = 0; i < numVertices; ++i) {
-			minPos.x = std::min(minPos.x, vertices[i].position.x);
-			minPos.y = std::min(minPos.y, vertices[i].position.y);
-			minPos.z = std::min(minPos.z, vertices[i].position.z);
-			maxPos.x = std::max(maxPos.x, vertices[i].position.x);
-			maxPos.y = std::max(maxPos.y, vertices[i].position.y);
-			maxPos.z = std::max(maxPos.z, vertices[i].position.z);
+			minPos = glm::min(minPos, vertices[i].position);
+			maxPos = glm::max(maxPos, vertices[i].position);
 		}
 		objCenter = (minPos + maxPos) * 0.5f;
-		float maxLen = std::max(maxPos.x - minPos.x, std::max(maxPos.y - minPos.y, maxPos.z - minPos.z));
+		float maxLen = glm::length(maxPos - minPos);
 		for (int i = 0; i < numVertices; ++i) {
 			vertices[i].position = (vertices[i].position - objCenter) / maxLen;
 		}
