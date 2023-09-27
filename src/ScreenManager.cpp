@@ -49,8 +49,8 @@ ScreenManager::ScreenManager()
 {
     // Load all obj files in the models directory.
     for (const auto& entry : std::filesystem::directory_iterator("models")) {
-        if (entry.is_directory()) {
-            m_objNames.push_back(entry.path().filename().string());
+        if (entry.path().extension() == ".obj") {
+            m_objNames.push_back(entry.path().stem().string());
         }
     }
 }
@@ -132,7 +132,7 @@ void ScreenManager::SetupRenderState()
 void ScreenManager::SetupScene(const std::string& objName)
 {
     std::cout << "Loading model: " << objName << std::endl;
-    auto modelPath = std::filesystem::path("models") / objName / (objName + ".obj");
+    auto modelPath = std::filesystem::path("models") / (objName + ".obj");
 
     m_mesh = std::make_unique<opengl_homework::TriangleMesh>();
     m_mesh->LoadFromFile(modelPath);
@@ -175,7 +175,6 @@ void ScreenManager::SetupMenu()
 
 void ScreenManager::MenuCB(int value)
 {
-    std::cout << "Menu item " << m_objNames[value - 1] << " is clicked." << std::endl;
     m_mesh.reset(nullptr);
     SetupScene(m_objNames[value - 1]);
 }

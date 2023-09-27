@@ -30,7 +30,7 @@ cd OpenGL-HW
 ![Bunny](./images/bunny.png)
 
 ### 3.2. ColorCube
-![ColorCube](./images/color_cube.png)
+![Cube](./images/cube.png)
 
 ### 3.3. Forklift
 ![Forklift](./images/forklift.png)
@@ -38,14 +38,11 @@ cd OpenGL-HW
 ### 3.4. Koffing
 ![Koffing](./images/koffing.png)
 
-### 3.5. Pillows
-![Pillows](./images/pillows.png)
+### 3.5. Gengar
+![Gengar](./images/gengar.png)
 
-### 3.6. Rose
-![Rose](./images/rose.png)
-
-### 3.7. Soccer
-![Soccer](./images/soccer.png)
+### 3.6. Teapot
+![Teapot](./images/teapot.png)
 
 ## 4. Details
 
@@ -116,18 +113,28 @@ Add menu to select model dynamically.
 .
 ├── CMakeLists.txt
 ├── build
-│   └── bin
-│       └── CG2023_HW
+│   ├── CMakeCache.txt
+│   ├── CMakeFiles
+│   ├── Makefile
+│   ├── bin
+│   │   └── CG2023_HW
+│   └── cmake_install.cmake
 ├── build.sh
 ├── images
+│   ├── bunny.png
+│   ├── cube.png
+│   ├── forklift.png
+│   ├── gengar.png
+│   ├── koffing.png
+│   ├── menu.png
+│   └── teapot.png
 ├── models
-│   ├── Bunny
-│   ├── ColorCube
-│   ├── Forklift
-│   ├── Koffing
-│   ├── Pillows
-│   ├── Rose
-│   └── Soccer
+│   ├── Bunny.obj
+│   ├── Cube.obj
+│   ├── Forklift.obj
+│   ├── Gengar.obj
+│   ├── Koffing.obj
+│   └── Teapot.obj
 ├── readme.md
 ├── src
 │   ├── CG2023_HW.cpp
