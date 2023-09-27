@@ -46,7 +46,7 @@ cd OpenGL-HW
 
 ## 4. Details
 
-### 4.1. Change raw pointer to smart pointer
+### 4.1. Smart pointer
 
 Use smart pointer to avoid memory leak.
 ```diff
@@ -59,7 +59,7 @@ Use smart pointer to avoid memory leak.
 + mesh = std::make_unique<TriangleMesh>();
 ```
 
-### 4.2. Change string path to c++17 filesystem::path
+### 4.2. C++17 filesystem::path
 
 Use c++17 filesystem::path to avoid hard code path.
 ```diff
@@ -67,7 +67,7 @@ Use c++17 filesystem::path to avoid hard code path.
 + auto modelPath = std::filesystem::path("../models/Bunny.obj");
 ```
 
-### 4.3. Change ifndef to pragma once
+### 4.3. Pragma once
 
 Use pragma once to avoid multiple include.
 ```diff
@@ -76,14 +76,14 @@ Use pragma once to avoid multiple include.
 + #pragma once
 ```
 
-### 4.4. Add namespace
+### 4.4. Namespace
 
 Use namespace to avoid name conflict.
 ```diff
 + namespace opengl_homework {
 ```
 
-### 4.5. Add menu to select model
+### 4.5. Select model menu
 
 Add menu to select model dynamically.
 ```diff
@@ -100,12 +100,23 @@ Add menu to select model dynamically.
 
 ![Menu](images/menu.png)
 
-### 4.6. Encapsulate the code of glut functions
+### 4.6. Encapsulate glut functions
 
+Encapsulate the code of glut functions to ScreenManager class.
 ```diff
 + class ScreenManager {
 ```
 
+### 4.7. Template wrap function
+
+Use template to wrap member function to glut callback function.
+```diff
++ template <typename T, typename... Args>
++ static void StaticWrapper(void (T::*func)(Args...), Args... args)
++ {
++     (s_instance->*func)(args...);
++ }
+```
 
 ## 5. Project structure
 
