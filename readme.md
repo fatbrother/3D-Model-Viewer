@@ -47,10 +47,11 @@ cd OpenGL-HW
 ### 3.7. Soccer
 ![Soccer](./images/soccer.png)
 
-## 4. Change details
+## 4. Details
 
 ### 4.1. Change raw pointer to smart pointer
 
+Use smart pointer to avoid memory leak.
 ```diff
 - TriangleMesh* mesh = nullptr;
 + std::unique_ptr<TriangleMesh> mesh = nullptr;
@@ -63,6 +64,7 @@ cd OpenGL-HW
 
 ### 4.2. Change string path to c++17 filesystem::path
 
+Use c++17 filesystem::path to avoid hard code path.
 ```diff
 - std::string path = "../models/Bunny.obj";
 + auto modelPath = std::filesystem::path("../models/Bunny.obj");
@@ -70,6 +72,7 @@ cd OpenGL-HW
 
 ### 4.3. Change ifndef to pragma once
 
+Use pragma once to avoid multiple include.
 ```diff
 - #ifndef TRIANGLEMESH_H
 - #define TRIANGLEMESH_H
@@ -78,9 +81,34 @@ cd OpenGL-HW
 
 ### 4.4. Add namespace
 
+Use namespace to avoid name conflict.
 ```diff
 + namespace opengl_homework {
 ```
+
+### 4.5. Add menu to select model
+
+Add menu to select model dynamically.
+```diff
++ void ScreenManager::SetupMenu()
++ {
++     // Create the main menu.
++     glutCreateMenu(MenuCBWrapper);
++     
++     for (int i = 0; i < m_objNames.size(); i++) 
++         glutAddMenuEntry(m_objNames[i].c_str(), i + 1);
++     glutAttachMenu(GLUT_RIGHT_BUTTON);
++ }
+```
+
+![Menu](images/menu.png)
+
+### 4.6. Encapsulate the code of glut functions
+
+```diff
++ class ScreenManager {
+```
+
 
 ## 5. Project structure
 
@@ -88,11 +116,8 @@ cd OpenGL-HW
 .
 ├── CMakeLists.txt
 ├── build
-│   ├── CMakeCache.txt
-│   ├── CMakeFiles
-│   ├── Makefile
-│   ├── bin
-│   └── cmake_install.cmake
+│   └── bin
+│       └── CG2023_HW
 ├── build.sh
 ├── images
 ├── models
@@ -106,6 +131,8 @@ cd OpenGL-HW
 ├── readme.md
 ├── src
 │   ├── CG2023_HW.cpp
+│   ├── ScreenManager.cpp
+│   ├── ScreenManager.h
 │   ├── TriangleMesh.cpp
 │   └── TriangleMesh.h
 └── vcpkg
