@@ -132,7 +132,7 @@ void ScreenManager::SetupScene(const std::string& objName)
     std::cout << "Loading model: " << objName << std::endl;
     auto modelPath = std::filesystem::path("models") / (objName + ".obj");
 
-    m_mesh = std::make_unique<opengl_homework::TriangleMesh>();
+    m_mesh.reset(new TriangleMesh());
     m_mesh->LoadFromFile(modelPath);
  
     // Please DO NOT TOUCH the following code.
@@ -173,7 +173,6 @@ void ScreenManager::SetupMenu()
 
 void ScreenManager::MenuCB(int value)
 {
-    m_mesh.reset(nullptr);
     SetupScene(m_objNames[value - 1]);
 }
 
