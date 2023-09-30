@@ -70,7 +70,7 @@ public:
 
 	int GetNumVertices() const { return numVertices; }
 	int GetNumTriangles() const { return numTriangles; }
-	int GetNumIndices() const { return (int)vertexIndices.size(); }
+	int GetNumIndices() const { return static_cast<int>(vertexIndices.size()); }
 	glm::vec3 GetObjCenter() const { return objCenter; }
 
 private:
