@@ -103,7 +103,7 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 		objCenter = (minPos + maxPos) * 0.5f;
 		float maxLen = glm::length(maxPos - minPos);
 		for (int i = 0; i < numVertices; ++i) {
-			vertices[i].position = (vertices[i].position - objCenter) / maxLen;
+			vertices[i].position = (vertices[i].position - objCenter) / maxLen * 1.5f;
 		}
 	}
 
