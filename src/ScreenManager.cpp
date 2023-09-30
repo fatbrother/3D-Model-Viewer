@@ -108,8 +108,6 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y)
 void ScreenManager::ReleaseResources()
 {
     s_instance = nullptr;
-
-    // Release the memory allocated for the triangle mesh.
     m_mesh.reset(nullptr);
     m_objNames.clear();
 }
@@ -179,7 +177,7 @@ void ScreenManager::MenuCB(int value)
     SetupScene(m_objNames[value - 1]);
 }
 
-ScreenManager* ScreenManager::s_instance = nullptr;
+std::shared_ptr<ScreenManager> ScreenManager::s_instance = nullptr;
 std::mutex ScreenManager::s_mutex = std::mutex();
 
 }

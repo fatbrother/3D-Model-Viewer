@@ -25,7 +25,7 @@ public:
     static std::shared_ptr<ScreenManager> GetInstance() { 
         std::lock_guard<std::mutex> lock(s_mutex);
         if (s_instance == nullptr) {
-            s_instance = new ScreenManager();
+            s_instance = std::shared_ptr<ScreenManager>(new ScreenManager());
         }
         return std::shared_ptr<ScreenManager>(s_instance);
     }
@@ -64,11 +64,11 @@ private:
     template <typename T, typename... Args>
     static void StaticWrapper(void (T::*func)(Args...), Args... args)
     {
-        (s_instance->*func)(args...);
+        (GetInstance().get()->*func)(args...);
     }
 
 private:
-    static ScreenManager* s_instance;
+    static std::shared_ptr<ScreenManager> s_instance;
     static std::mutex s_mutex;
 
     int m_width = 600;
