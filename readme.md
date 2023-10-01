@@ -111,10 +111,10 @@ Encapsulate the code of glut functions to ScreenManager class.
 
 Use template to wrap member function to glut callback function.
 ```diff
-+ template <typename T, typename... Args>
-+ static void StaticWrapper(void (T::*func)(Args...), Args... args)
-+ {
-+     (s_instance->*func)(args...);
++ template<typename... Args>
++ static auto StaticWrapper(void(ScreenManager::*func)(Args...)) {
++     static void(ScreenManager::*s_func)(Args...) = func;
++     return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
 + }
 ```
 
