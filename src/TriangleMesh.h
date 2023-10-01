@@ -40,17 +40,17 @@ public:
 	// TriangleMesh Public Methods.
 	TriangleMesh();
 	~TriangleMesh();
-	
+
 	/**
 	 * @brief Load a model from obj file.
-	 * 
+	 *
 	 * @param filePath Path to the obj file.
 	 * @param normalized Normalize the model to fit in a unit cube.
-	 * 
+	 *
 	 * @return true if the model is loaded successfully.
 	*/
 	bool LoadFromFile(const std::filesystem::path& filePath, const bool normalized = true);
-	
+
 	/**
 	 * @brief Create buffers for rendering.
 	*/
@@ -63,7 +63,7 @@ public:
 
 	/**
 	 * @brief Apply transformation to the mesh on CPU.
-	 * 
+	 *
 	 * @param mvpMatrix Model-view-projection matrix.
 	*/
 	void ApplyTransformCPU(const glm::mat4x4& mvpMatrix);

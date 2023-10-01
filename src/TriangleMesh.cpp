@@ -3,8 +3,7 @@
 using namespace opengl_homework;
 
 // Desc: Constructor of a triangle mesh.
-TriangleMesh::TriangleMesh()
-{
+TriangleMesh::TriangleMesh() {
 	numVertices = 0;
 	numTriangles = 0;
 	objCenter = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -13,8 +12,7 @@ TriangleMesh::TriangleMesh()
 }
 
 // Desc: Destructor of a triangle mesh.
-TriangleMesh::~TriangleMesh()
-{
+TriangleMesh::~TriangleMesh() {
 	vertices.clear();
 	vertexIndices.clear();
 	glDeleteBuffers(1, &vboId);
@@ -22,8 +20,7 @@ TriangleMesh::~TriangleMesh()
 }
 
 // Desc: Load the geometry data of the model from file and normalize it.
-bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const bool normalized)
-{	
+bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const bool normalized) {
 	std::ifstream fin(filePath);
 	if (!fin) {
 		std::cerr << "Error: cannot open file " << filePath << std::endl;
@@ -43,15 +40,18 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 			glm::vec3 position;
 			iss >> position.x >> position.y >> position.z;
 			positions.push_back(position);
-		} else if (type == "vn") {
+		}
+		else if (type == "vn") {
 			glm::vec3 normal;
 			iss >> normal.x >> normal.y >> normal.z;
 			normals.push_back(normal);
-		} else if (type == "vt") {
+		}
+		else if (type == "vt") {
 			glm::vec2 texcoord;
 			iss >> texcoord.x >> texcoord.y;
 			texcoords.push_back(texcoord);
-		} else if (type == "f") {
+		}
+		else if (type == "f") {
 			std::string v1, v2, v3;
 			iss >> v1 >> v2 >> v3;
 			std::istringstream iss1(v1);
@@ -112,8 +112,7 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 }
 
 // Desc: Create vertex buffer and index buffer.
-void TriangleMesh::CreateBuffers()
-{
+void TriangleMesh::CreateBuffers() {
 	glGenBuffers(1, &vboId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
 	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(VertexPTN), vertices.data(), GL_STATIC_DRAW);
@@ -124,8 +123,7 @@ void TriangleMesh::CreateBuffers()
 }
 
 // Desc: Render the mesh.
-void TriangleMesh::Render() const
-{
+void TriangleMesh::Render() const {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, position));
 	glEnableVertexAttribArray(1);
@@ -141,20 +139,18 @@ void TriangleMesh::Render() const
 }
 
 // Desc: Apply transformation to all vertices (DON'T NEED TO TOUCH)
-void TriangleMesh::ApplyTransformCPU(const glm::mat4x4& mvpMatrix)
-{
-	for (int i = 0 ; i < numVertices; ++i) {
-        glm::vec4 p = mvpMatrix * glm::vec4(vertices[i].position, 1.0f);
-        if (p.w != 0.0f) {
-            float inv = 1.0f / p.w; 
-            vertices[i].position = p * inv;
-        }
-    }
+void TriangleMesh::ApplyTransformCPU(const glm::mat4x4& mvpMatrix) {
+	for (int i = 0; i < numVertices; ++i) {
+		glm::vec4 p = mvpMatrix * glm::vec4(vertices[i].position, 1.0f);
+		if (p.w != 0.0f) {
+			float inv = 1.0f / p.w;
+			vertices[i].position = p * inv;
+		}
+	}
 }
 
 // Desc: Print mesh information.
-void TriangleMesh::PrintMeshInfo() const
-{
+void TriangleMesh::PrintMeshInfo() const {
 	std::cout << "[*] Mesh Information: " << std::endl;
 	std::cout << "# Vertices: " << numVertices << std::endl;
 	std::cout << "# Triangles: " << numTriangles << std::endl;

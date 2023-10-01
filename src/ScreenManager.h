@@ -3,15 +3,14 @@
 // My headers.
 #include "TriangleMesh.h"
 
-namespace opengl_homework
-{
+namespace opengl_homework {
 
 /**
  * @brief ScreenManager class.
- * 
+ *
  * This class manages the rendering loop and the user input.
  * It is implemented as a singleton.
- * 
+ *
  * @note Call GetInstance() to get the singleton instance, and call Start() to start the rendering loop.
 */
 class ScreenManager
@@ -19,10 +18,10 @@ class ScreenManager
 public:
     /**
      * @brief Get the singleton instance of ScreenManager.
-     * 
-     * @return std::shared_ptr<ScreenManager> 
+     *
+     * @return std::shared_ptr<ScreenManager>
      */
-    static std::shared_ptr<ScreenManager> GetInstance() { 
+    static std::shared_ptr<ScreenManager> GetInstance() {
         std::lock_guard<std::mutex> lock(s_mutex);
         if (s_instance == nullptr) {
             s_instance = std::shared_ptr<ScreenManager>(new ScreenManager());
@@ -32,11 +31,11 @@ public:
 
     ~ScreenManager() { ReleaseResources(); }
 
-   
+
     /**
      * @brief Start the rendering loop.
-     */  
-    void Start(int, char **);
+     */
+    void Start(int, char**);
 
 private:
     ScreenManager();
@@ -53,16 +52,16 @@ private:
 
     /**
      * @brief Convert a member function to a lambda function.
-     * 
+     *
      * @tparam Args
      * @param func
      * @return lambda function
-     * 
+     *
      * @note Usage: glutRegisterFunc(StaticWrapper(&ScreenManager::MemberFunc));
     */
     template<typename... Args>
-    static auto Member2Callback(void(ScreenManager::*func)(Args...)) {
-        static void(ScreenManager::*s_func)(Args...) = func;
+    static auto Member2Callback(void(ScreenManager::* func)(Args...)) {
+        static void(ScreenManager:: * s_func)(Args...) = func;
         return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
     }
 

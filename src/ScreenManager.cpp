@@ -1,14 +1,12 @@
 #include <ScreenManager.h>
 
-namespace opengl_homework
-{
+namespace opengl_homework {
 
 // ------------------------------------------------------------------------
 // Public member functions. -----------------------------------------------
 // ------------------------------------------------------------------------
 
-void ScreenManager::Start(int argc, char **argv)
-{
+void ScreenManager::Start(int argc, char** argv) {
     // Setting window properties.
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -20,8 +18,8 @@ void ScreenManager::Start(int argc, char **argv)
     // Must be done after glut is initialized!
     GLenum res = glewInit();
     if (res != GLEW_OK) {
-        std::cerr << "GLEW initialization error: " 
-                  << glewGetErrorString(res) << std::endl;
+        std::cerr << "GLEW initialization error: "
+            << glewGetErrorString(res) << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -45,8 +43,7 @@ void ScreenManager::Start(int argc, char **argv)
 // Private member functions. ----------------------------------------------
 // ------------------------------------------------------------------------
 
-ScreenManager::ScreenManager()
-{
+ScreenManager::ScreenManager() {
     // Load all obj files in the models directory.
     for (const auto& entry : std::filesystem::directory_iterator("models")) {
         if (entry.path().extension() == ".obj") {
@@ -56,25 +53,22 @@ ScreenManager::ScreenManager()
 }
 
 // Callback function for glutDisplayFunc.
-void ScreenManager::RenderSceneCB()
-{
+void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+
     m_mesh->Render();
-    
+
     glutSwapBuffers();
 }
 
 // Callback function for glutReshapeFunc.
-void ScreenManager::ReshapeCB(int w, int h)
-{
+void ScreenManager::ReshapeCB(int w, int h) {
     // Adjust camera and projection here.
     // Implemented in HW2.
 }
 
 // Callback function for glutSpecialFunc.
-void ScreenManager::ProcessSpecialKeysCB(int key, int x, int y)
-{
+void ScreenManager::ProcessSpecialKeysCB(int key, int x, int y) {
     // Handle special (functional) keyboard inputs such as F1, spacebar, page up, etc. 
     switch (key) {
     case GLUT_KEY_F1:
@@ -95,8 +89,7 @@ void ScreenManager::ProcessSpecialKeysCB(int key, int x, int y)
 }
 
 // Callback function for glutKeyboardFunc.
-void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y)
-{
+void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
     // Handle other keyboard inputs those are not defined as special keys.
     if (key == 27) {
         // Release memory allocation if needed.
@@ -105,36 +98,33 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y)
     }
 }
 
-void ScreenManager::ReleaseResources()
-{
+void ScreenManager::ReleaseResources() {
     s_instance = nullptr;
     m_mesh.reset(nullptr);
     m_objNames.clear();
 }
 
-void ScreenManager::SetupRenderState()
-{
+void ScreenManager::SetupRenderState() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glm::vec4 clearColor = glm::vec4(0.44f, 0.57f, 0.75f, 1.00f);
     glClearColor(
-        (GLclampf)(clearColor.r), 
-        (GLclampf)(clearColor.g), 
-        (GLclampf)(clearColor.b), 
+        (GLclampf)(clearColor.r),
+        (GLclampf)(clearColor.g),
+        (GLclampf)(clearColor.b),
         (GLclampf)(clearColor.a)
     );
 }
 
 // Load a model from obj file and apply transformation.
 // You can alter the parameters for dynamically loading a model.
-void ScreenManager::SetupScene(const std::string& objName)
-{
+void ScreenManager::SetupScene(const std::string& objName) {
     std::cout << "Loading model: " << objName << std::endl;
     auto modelPath = std::filesystem::path("models") / (objName + ".obj");
 
     m_mesh.reset(new TriangleMesh());
     m_mesh->LoadFromFile(modelPath);
- 
+
     // Please DO NOT TOUCH the following code.
     // ------------------------------------------------------------------------
     // Build transformation matrices.
@@ -154,25 +144,23 @@ void ScreenManager::SetupScene(const std::string& objName)
 
     // Apply CPU transformation.
     glm::mat4x4 MVP = P * V * M;
-    
+
     m_mesh->ApplyTransformCPU(MVP);
-    
+
     // Create and upload vertex/index buffers.
     m_mesh->CreateBuffers();
 }
 
-void ScreenManager::SetupMenu()
-{
+void ScreenManager::SetupMenu() {
     // Create the main menu.
     glutCreateMenu(Member2Callback(&ScreenManager::MenuCB));
-    
-    for (int i = 0; i < m_objNames.size(); i++) 
+
+    for (int i = 0; i < m_objNames.size(); i++)
         glutAddMenuEntry(m_objNames[i].c_str(), i + 1);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
-void ScreenManager::MenuCB(int value)
-{
+void ScreenManager::MenuCB(int value) {
     SetupScene(m_objNames[value - 1]);
 }
 
