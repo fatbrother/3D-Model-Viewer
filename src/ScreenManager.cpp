@@ -31,11 +31,11 @@ void ScreenManager::Start(int argc, char **argv)
     SetupMenu();
 
     // Register callback functions.
-    glutDisplayFunc([](){ StaticWrapper(&ScreenManager::RenderSceneCB); });
-    glutIdleFunc([](){ StaticWrapper(&ScreenManager::RenderSceneCB); });
-    glutReshapeFunc([](int w, int h){ StaticWrapper(&ScreenManager::ReshapeCB, w, h); });
-    glutSpecialFunc([](int key, int x, int y){ StaticWrapper(&ScreenManager::ProcessSpecialKeysCB, key, x, y); });
-    glutKeyboardFunc([](unsigned char key, int x, int y){ StaticWrapper(&ScreenManager::ProcessKeysCB, key, x, y); });
+    glutDisplayFunc(StaticWrapper(&ScreenManager::RenderSceneCB));
+    glutIdleFunc(StaticWrapper(&ScreenManager::RenderSceneCB));
+    glutReshapeFunc(StaticWrapper(&ScreenManager::ReshapeCB));
+    glutSpecialFunc(StaticWrapper(&ScreenManager::ProcessSpecialKeysCB));
+    glutKeyboardFunc(StaticWrapper(&ScreenManager::ProcessKeysCB));
 
     // Start rendering loop.
     glutMainLoop();
@@ -164,7 +164,7 @@ void ScreenManager::SetupScene(const std::string& objName)
 void ScreenManager::SetupMenu()
 {
     // Create the main menu.
-    glutCreateMenu([](int value){ StaticWrapper(&ScreenManager::MenuCB, value); });
+    glutCreateMenu(StaticWrapper(&ScreenManager::MenuCB));
     
     for (int i = 0; i < m_objNames.size(); i++) 
         glutAddMenuEntry(m_objNames[i].c_str(), i + 1);

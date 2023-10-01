@@ -52,19 +52,18 @@ private:
     void MenuCB(int);
 
     /**
-     * @brief Static wrapper for member functions.
+     * @brief Convert a member function to a lambda function.
      * 
-     * @tparam T 
-     * @tparam Args 
-     * @param func 
-     * @param args 
+     * @tparam Args
+     * @param func
+     * @return lambda function
      * 
-     * @note Usage: [](Args... args){ StaticWrapper(&T::MemberFunction, args...); }
-     */
-    template <typename T, typename... Args>
-    static void StaticWrapper(void (T::*func)(Args...), Args... args)
-    {
-        (GetInstance().get()->*func)(args...);
+     * @note Usage: glutRegisterFunc(StaticWrapper(&ScreenManager::MemberFunc));
+    */
+    template<typename... Args>
+    static auto StaticWrapper(void(ScreenManager::*func)(Args...)) {
+        static void(ScreenManager::*s_func)(Args...) = func;
+        return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
     }
 
 private:
