@@ -26,11 +26,8 @@ public:
      * @return std::shared_ptr<ScreenManager>
      */
     static std::shared_ptr<ScreenManager> GetInstance() {
-        std::lock_guard<std::mutex> lock(s_mutex);
-        if (s_instance == nullptr) {
-            s_instance = std::shared_ptr<ScreenManager>(new ScreenManager());
-        }
-        return std::shared_ptr<ScreenManager>(s_instance);
+        static std::shared_ptr<ScreenManager> instance(new ScreenManager);
+        return instance;      
     }
 
     ~ScreenManager() { ReleaseResources(); }
@@ -70,9 +67,6 @@ private:
     }
 
 private:
-    static std::shared_ptr<ScreenManager> s_instance;
-    static std::mutex s_mutex;
-
     int m_width = 600;
     int m_height = 600;
     std::vector<std::string> m_objNames;

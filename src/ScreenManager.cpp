@@ -155,7 +155,6 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
 }
 
 void ScreenManager::ReleaseResources() {
-    s_instance = nullptr;
     m_currentMesh = nullptr;
     m_objNames.clear();
     m_meshes.clear();
@@ -195,6 +194,3 @@ void ScreenManager::SetupMenu() {
 void ScreenManager::MenuCB(int value) {
     SetupScene(value - 1);
 }
-
-std::shared_ptr<ScreenManager> ScreenManager::s_instance = nullptr;
-std::mutex ScreenManager::s_mutex = std::mutex();
