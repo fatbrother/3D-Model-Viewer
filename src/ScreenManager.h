@@ -3,6 +3,10 @@
 // My headers.
 #include "TriangleMesh.h"
 
+// STL headers.
+#include <mutex>
+#include <thread>
+
 namespace opengl_homework {
 
 /**
@@ -60,7 +64,7 @@ private:
      * @note Usage: glutRegisterFunc(StaticWrapper(&ScreenManager::MemberFunc));
     */
     template<typename... Args>
-    static auto Member2Callback(void(ScreenManager::* func)(Args...)) {
+    static auto Member2Callback(void(ScreenManager::* func)(Args...)) -> void(*)(Args...) {
         static void(ScreenManager:: * s_func)(Args...) = func;
         return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
     }

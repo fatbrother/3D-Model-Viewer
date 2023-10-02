@@ -1,6 +1,6 @@
 #include <ScreenManager.h>
 
-namespace opengl_homework {
+using namespace opengl_homework;
 
 // ------------------------------------------------------------------------
 // Public member functions. -----------------------------------------------
@@ -198,5 +198,3 @@ void ScreenManager::MenuCB(int value) {
 
 std::shared_ptr<ScreenManager> ScreenManager::s_instance = nullptr;
 std::mutex ScreenManager::s_mutex = std::mutex();
-
-}

@@ -9,7 +9,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // C++ STL headers.
-#include <bits/stdc++.h>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
 namespace opengl_homework {
 

@@ -37,19 +37,19 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 		std::string type;
 		iss >> type;
 		if (type == "v") {
-			glm::vec3 position;
-			iss >> position.x >> position.y >> position.z;
-			positions.push_back(position);
+			float x, y, z;
+			iss >> x >> y >> z;
+			positions.emplace_back(x, y, z);
 		}
 		else if (type == "vn") {
-			glm::vec3 normal;
-			iss >> normal.x >> normal.y >> normal.z;
-			normals.push_back(normal);
+			float x, y, z;
+			iss >> x >> y >> z;
+			normals.emplace_back(x, y, z);
 		}
 		else if (type == "vt") {
-			glm::vec2 texcoord;
-			iss >> texcoord.x >> texcoord.y;
-			texcoords.push_back(texcoord);
+			float u, v;
+			iss >> u >> v;
+			texcoords.emplace_back(u, v);
 		}
 		else if (type == "f") {
 			std::string v1, v2, v3;
