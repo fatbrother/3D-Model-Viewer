@@ -118,6 +118,54 @@ Use template to wrap member function to glut callback function.
 + }
 ```
 
+### 4.8. Load model
+
+Preprocess the model file and store with vector.
+```diff
++ using MeshPtr = std::shared_ptr<opengl_homework::TriangleMesh>;
++ std::vector<MeshPtr> m_meshes;
++ MeshPtr m_currentMesh;
+```
+
+Use thread to load model asynchronously.
+```diff
++ // find the minimum bytes size of the obj files and swap it to the first position
++ int min = INT_MAX;
++ int minIndex = 0;
++ for (int i = 0; i < m_objNames.size(); i++) {
++     auto size = std::filesystem::file_size("models/" + m_objNames[i] + ".obj");
++     if (size < min) {
++         min = size;
++         minIndex = i;
++     }
++ }
++ std::swap(m_objNames[0], m_objNames[minIndex]);
++ 
++ // Load all obj files.
++ auto basePath = std::filesystem::path("models");
++ m_meshes.resize(m_objNames.size());
++ 
++ // Load first model in the main thread.
++ auto firstFilePath = basePath / (m_objNames[0] + ".obj");
++ m_meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
++ m_meshes[0]->ApplyTransformCPU(MVP);
++ 
++ auto threadFunc = [](
++     int i,
++     const std::filesystem::path& basePath,
++     const std::vector<std::string>& m_objNames,
++     const glm::mat4x4& MVP,
++     std::vector<MeshPtr>& m_meshes) {
++         auto filePath = basePath / (m_objNames[i] + ".obj");
++         m_meshes[i] = std::make_shared<TriangleMesh>(filePath, true);
++         m_meshes[i]->ApplyTransformCPU(MVP);
++     };
++ for (int i = 1; i < m_objNames.size(); i++) {
++     std::thread thread(threadFunc, i, basePath, m_objNames, MVP, std::ref(m_meshes));
++     thread.detach();
++ }
+```
+
 ## 5. Project structure
 
 ```
