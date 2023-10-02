@@ -38,18 +38,8 @@ class TriangleMesh
 {
 public:
 	// TriangleMesh Public Methods.
-	TriangleMesh();
+	TriangleMesh(const std::filesystem::path&, const bool);
 	~TriangleMesh();
-
-	/**
-	 * @brief Load a model from obj file.
-	 *
-	 * @param filePath Path to the obj file.
-	 * @param normalized Normalize the model to fit in a unit cube.
-	 *
-	 * @return true if the model is loaded successfully.
-	*/
-	bool LoadFromFile(const std::filesystem::path& filePath, const bool normalized = true);
 
 	/**
 	 * @brief Create buffers for rendering.
@@ -74,6 +64,15 @@ public:
 	glm::vec3 GetObjCenter() const { return objCenter; }
 
 private:
+	/**
+	 * @brief Load a model from obj file.
+	 *
+	 * @param filePath Path to the obj file.
+	 * @param normalized Normalize the model to fit in a unit cube.
+	 *
+	 * @return true if the model is loaded successfully.
+	*/
+	bool LoadFromFile(const std::filesystem::path&, const bool);
 	// TriangleMesh Private Methods.
 	void PrintMeshInfo() const;
 
@@ -83,6 +82,7 @@ private:
 	std::vector<VertexPTN> vertices;
 	std::vector<unsigned int> vertexIndices;
 
+	std::string name;
 	int numVertices;
 	int numTriangles;
 	glm::vec3 objCenter;

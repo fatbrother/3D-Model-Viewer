@@ -41,7 +41,7 @@ private:
     ScreenManager();
 
     void SetupRenderState();
-    void SetupScene(const std::string&);
+    void SetupScene(int);
     void ReleaseResources();
     void ReshapeCB(int, int);
     void ProcessSpecialKeysCB(int, int, int);
@@ -72,7 +72,10 @@ private:
     int m_width = 600;
     int m_height = 600;
     std::vector<std::string> m_objNames;
-    std::unique_ptr<opengl_homework::TriangleMesh> m_mesh = nullptr;
+
+    using MeshPtr = std::shared_ptr<opengl_homework::TriangleMesh>;
+    std::vector<MeshPtr> m_meshes;
+    MeshPtr m_currentMesh;
 };
 
 }

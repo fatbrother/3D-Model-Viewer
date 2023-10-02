@@ -25,7 +25,7 @@ void ScreenManager::Start(int argc, char** argv) {
 
     // Initialization.
     SetupRenderState();
-    SetupScene("Bunny");
+    SetupScene(0);
     SetupMenu();
 
     // Register callback functions.
@@ -50,13 +50,69 @@ ScreenManager::ScreenManager() {
             m_objNames.push_back(entry.path().stem().string());
         }
     }
+
+    // Please DO NOT TOUCH the following code.
+    // ------------------------------------------------------------------------
+    // Build transformation matrices.
+    // World.
+    glm::mat4x4 M(1.0f);
+    // Camera.
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.5f, 2.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::mat4x4 V = glm::lookAt(cameraPos, cameraTarget, cameraUp);
+    // Projection.
+    float fov = 40.0f;
+    float aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
+    float zNear = 0.1f;
+    float zFar = 100.0f;
+    glm::mat4x4 P = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
+
+    // Apply CPU transformation.
+    glm::mat4x4 MVP = P * V * M;
+
+    // find the minimum bytes size of the obj files and swap it to the first position
+    int min = INT_MAX;
+    int minIndex = 0;
+    for (int i = 0; i < m_objNames.size(); i++) {
+        auto size = std::filesystem::file_size("models/" + m_objNames[i] + ".obj");
+        if (size < min) {
+            min = size;
+            minIndex = i;
+        }
+    }
+    std::swap(m_objNames[0], m_objNames[minIndex]);
+
+    // Load all obj files.
+    auto basePath = std::filesystem::path("models");
+    m_meshes.resize(m_objNames.size());
+
+    // Load first model in the main thread.
+    auto firstFilePath = basePath / (m_objNames[0] + ".obj");
+    m_meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
+    m_meshes[0]->ApplyTransformCPU(MVP);
+
+    auto threadFunc = [](
+        int i,
+        const std::filesystem::path& basePath,
+        const std::vector<std::string>& m_objNames,
+        const glm::mat4x4& MVP,
+        std::vector<MeshPtr>& m_meshes) {
+            auto filePath = basePath / (m_objNames[i] + ".obj");
+            m_meshes[i] = std::make_shared<TriangleMesh>(filePath, true);
+            m_meshes[i]->ApplyTransformCPU(MVP);
+        };
+    for (int i = 1; i < m_objNames.size(); i++) {
+        std::thread thread(threadFunc, i, basePath, m_objNames, MVP, std::ref(m_meshes));
+        thread.detach();
+    }
 }
 
 // Callback function for glutDisplayFunc.
 void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_mesh->Render();
+    m_currentMesh->Render();
 
     glutSwapBuffers();
 }
@@ -100,8 +156,9 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
 
 void ScreenManager::ReleaseResources() {
     s_instance = nullptr;
-    m_mesh.reset(nullptr);
+    m_currentMesh = nullptr;
     m_objNames.clear();
+    m_meshes.clear();
 }
 
 void ScreenManager::SetupRenderState() {
@@ -118,37 +175,12 @@ void ScreenManager::SetupRenderState() {
 
 // Load a model from obj file and apply transformation.
 // You can alter the parameters for dynamically loading a model.
-void ScreenManager::SetupScene(const std::string& objName) {
-    std::cout << "Loading model: " << objName << std::endl;
-    auto modelPath = std::filesystem::path("models") / (objName + ".obj");
-
-    m_mesh.reset(new TriangleMesh());
-    m_mesh->LoadFromFile(modelPath);
-
-    // Please DO NOT TOUCH the following code.
-    // ------------------------------------------------------------------------
-    // Build transformation matrices.
-    // World.
-    glm::mat4x4 M(1.0f);
-    // Camera.
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.5f, 2.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::mat4x4 V = glm::lookAt(cameraPos, cameraTarget, cameraUp);
-    // Projection.
-    float fov = 40.0f;
-    float aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
-    float zNear = 0.1f;
-    float zFar = 100.0f;
-    glm::mat4x4 P = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
-
-    // Apply CPU transformation.
-    glm::mat4x4 MVP = P * V * M;
-
-    m_mesh->ApplyTransformCPU(MVP);
+void ScreenManager::SetupScene(int objIndex) {
+    // Apply transformation to the model.
+    m_currentMesh = m_meshes[objIndex];
 
     // Create and upload vertex/index buffers.
-    m_mesh->CreateBuffers();
+    m_currentMesh->CreateBuffers();
 }
 
 void ScreenManager::SetupMenu() {
@@ -161,7 +193,7 @@ void ScreenManager::SetupMenu() {
 }
 
 void ScreenManager::MenuCB(int value) {
-    SetupScene(m_objNames[value - 1]);
+    SetupScene(value - 1);
 }
 
 std::shared_ptr<ScreenManager> ScreenManager::s_instance = nullptr;

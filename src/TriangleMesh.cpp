@@ -3,12 +3,12 @@
 using namespace opengl_homework;
 
 // Desc: Constructor of a triangle mesh.
-TriangleMesh::TriangleMesh() {
+TriangleMesh::TriangleMesh(const std::filesystem::path& filePath, const bool normalized = true) {
+	name = filePath.stem().string();
 	numVertices = 0;
 	numTriangles = 0;
 	objCenter = glm::vec3(0.0f, 0.0f, 0.0f);
-	vboId = 0;
-	iboId = 0;
+	LoadFromFile(filePath, normalized);
 }
 
 // Desc: Destructor of a triangle mesh.
@@ -151,7 +151,7 @@ void TriangleMesh::ApplyTransformCPU(const glm::mat4x4& mvpMatrix) {
 
 // Desc: Print mesh information.
 void TriangleMesh::PrintMeshInfo() const {
-	std::cout << "[*] Mesh Information: " << std::endl;
+	std::cout << "[*] Mesh Info: " << name << std::endl;
 	std::cout << "# Vertices: " << numVertices << std::endl;
 	std::cout << "# Triangles: " << numTriangles << std::endl;
 	std::cout << "Center: (" << objCenter.x << " , " << objCenter.y << " , " << objCenter.z << ")" << std::endl;
