@@ -2,28 +2,49 @@
 
 ## 1. Environment
 
+### 1.1. Linux
+
 * OS: Linux Ubuntu 22.04
 * Compiler: g++ 11.4.0, C++17
 * Package Manager: vcpkg
 * Library: freeglut, glew, glm
 
+### 1.2. Windows
+
+* OS: Windows 11
+* Shell: PowerShell 7.2.1
+* Compiler: MSVC 19.29.30133.0, C++17
+* Package Manager: vcpkg
+* Library: freeglut, glew, glm
+
 ## 2. Build & Run
 
-### 2.1. Clone repository
+### 2.1. Run on Linux
 
 ```bash
 git clone https://github.com/fatbrother/OpenGL-HW.git
+cd OpenGL-HW
+
 git submodule update --init
 vcpkg/bootstrap-vcpkg.sh
 ./vcpkg/vcpkg install freeglut glew glm
-```
 
-### 2.2. Build and Run
-
-```bash
-cd OpenGL-HW
 ./build.sh
 ./build/bin/CG2023_HW
+```
+
+### 2.2. Run on Windows
+
+```bash
+git clone https://github.com/fatbrother/OpenGL-HW.git
+cd OpenGL-HW
+
+git submodule update --init
+vcpkg/bootstrap-vcpkg.bat
+./vcpkg/vcpkg install freeglut glew glm
+
+./build.bat
+./build/bin/CG2023_HW.exe
 ```
 
 ## 3. Result
@@ -33,18 +54,23 @@ cd OpenGL-HW
 ![Bunny](./images/bunny.png)
 
 ### 3.2. ColorCube
+
 ![Cube](./images/cube.png)
 
 ### 3.3. Forklift
+
 ![Forklift](./images/forklift.png)
 
 ### 3.4. Koffing
+
 ![Koffing](./images/koffing.png)
 
 ### 3.5. Gengar
+
 ![Gengar](./images/gengar.png)
 
 ### 3.6. Teapot
+
 ![Teapot](./images/teapot.png)
 
 ## 4. Details
@@ -52,6 +78,7 @@ cd OpenGL-HW
 ### 4.1. Smart pointer
 
 Use smart pointer to avoid memory leak.
+
 ```diff
 - TriangleMesh* mesh = nullptr;
 + std::unique_ptr<TriangleMesh> mesh = nullptr;
@@ -65,6 +92,7 @@ Use smart pointer to avoid memory leak.
 ### 4.2. C++17 filesystem::path
 
 Use c++17 filesystem::path to avoid hard code path.
+
 ```diff
 - std::string path = "../models/Bunny.obj";
 + auto modelPath = std::filesystem::path("../models/Bunny.obj");
@@ -73,6 +101,7 @@ Use c++17 filesystem::path to avoid hard code path.
 ### 4.3. Pragma once
 
 Use pragma once to avoid multiple include.
+
 ```diff
 - #ifndef TRIANGLEMESH_H
 - #define TRIANGLEMESH_H
@@ -82,6 +111,7 @@ Use pragma once to avoid multiple include.
 ### 4.4. Namespace
 
 Use namespace to avoid name conflict.
+
 ```diff
 + namespace opengl_homework {
 ```
@@ -89,6 +119,7 @@ Use namespace to avoid name conflict.
 ### 4.5. Select model menu
 
 Add menu to select model dynamically.
+
 ```diff
 + void ScreenManager::SetupMenu()
 + {
@@ -106,6 +137,7 @@ Add menu to select model dynamically.
 ### 4.6. Encapsulate glut functions
 
 Encapsulate the code of glut functions to ScreenManager class.
+
 ```diff
 + class ScreenManager {
 ```
@@ -113,6 +145,7 @@ Encapsulate the code of glut functions to ScreenManager class.
 ### 4.7. Template wrap function
 
 Use template to wrap member function to glut callback function.
+
 ```diff
 + template<typename... Args>
 + static auto StaticWrapper(void(ScreenManager::*func)(Args...)) {
@@ -124,6 +157,7 @@ Use template to wrap member function to glut callback function.
 ### 4.8. Load model
 
 Preprocess the model file and store with vector.
+
 ```diff
 + using MeshPtr = std::shared_ptr<opengl_homework::TriangleMesh>;
 + std::vector<MeshPtr> m_meshes;
@@ -131,6 +165,7 @@ Preprocess the model file and store with vector.
 ```
 
 Use thread to load model asynchronously.
+
 ```diff
 + // find the minimum bytes size of the obj files and swap it to the first position
 + int min = INT_MAX;
@@ -171,7 +206,7 @@ Use thread to load model asynchronously.
 
 ## 5. Project structure
 
-```
+```text
 .
 ├── CMakeLists.txt
 ├── build
@@ -206,6 +241,7 @@ Use thread to load model asynchronously.
 │   └── TriangleMesh.h
 └── vcpkg
 ```
+
 ## 6. Commit message
 
 feat: 新增/修改功能 (feature)  

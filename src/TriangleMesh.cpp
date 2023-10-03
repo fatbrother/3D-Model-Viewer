@@ -1,5 +1,11 @@
 #include "TriangleMesh.h"
 
+// C++ STL headers.
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 using namespace opengl_homework;
 
 // Desc: Constructor of a triangle mesh.

@@ -1,5 +1,8 @@
 #include <ScreenManager.h>
 
+// C++ STL headers.
+#include <iostream>
+
 using namespace opengl_homework;
 
 // ------------------------------------------------------------------------
