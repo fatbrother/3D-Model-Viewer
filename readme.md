@@ -13,7 +13,7 @@
 
 * OS: Windows 11
 * Shell: PowerShell 7.2.1
-* Compiler: MSVC 19.29.30133.0, C++17
+* Compiler: MSVC, C++17
 * Package Manager: vcpkg
 * Library: freeglut, glew, glm
 
@@ -44,7 +44,7 @@ vcpkg/bootstrap-vcpkg.bat
 ./vcpkg/vcpkg install freeglut glew glm
 
 ./build.bat
-./build/bin/CG2023_HW.exe
+./build/bin/Release/CG2023_HW.exe
 ```
 
 ## 3. Result
