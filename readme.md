@@ -13,6 +13,9 @@
 
 ```bash
 git clone https://github.com/fatbrother/OpenGL-HW.git
+git submodule update --init
+vcpkg/bootstrap-vcpkg.sh
+./vcpkg/vcpkg install freeglut glew glm
 ```
 
 ### 2.2. Build and Run
