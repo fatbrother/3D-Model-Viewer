@@ -54,7 +54,7 @@ private:
      * @param func
      * @return lambda function
      *
-     * @note Usage: glutRegisterFunc(StaticWrapper(&ScreenManager::MemberFunc));
+     * @note Usage: glutRegisterFunc(Member2Callback(&ScreenManager::MemberFunc));
     */
     template<typename... Args>
     static auto Member2Callback(void(ScreenManager::* func)(Args...)) -> void(*)(Args...) {
