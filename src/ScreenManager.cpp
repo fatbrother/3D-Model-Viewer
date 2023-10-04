@@ -2,6 +2,7 @@
 
 // C++ STL headers.
 #include <iostream>
+#include <thread>
 
 using namespace opengl_homework;
 

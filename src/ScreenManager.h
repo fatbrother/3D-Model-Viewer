@@ -3,10 +3,6 @@
 // My headers.
 #include "TriangleMesh.h"
 
-// STL headers.
-#include <mutex>
-#include <thread>
-
 namespace opengl_homework {
 
 /**
