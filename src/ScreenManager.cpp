@@ -30,14 +30,16 @@ void ScreenManager::Start(int argc, char** argv) {
     // Initialization.
     SetupRenderState();
     SetupScene(0);
-    SetupMenu();
 
     // Register callback functions.
+    glutCreateMenu(Member2Callback(&ScreenManager::MenuCB));
     glutDisplayFunc(Member2Callback(&ScreenManager::RenderSceneCB));
     glutIdleFunc(Member2Callback(&ScreenManager::RenderSceneCB));
     glutReshapeFunc(Member2Callback(&ScreenManager::ReshapeCB));
     glutSpecialFunc(Member2Callback(&ScreenManager::ProcessSpecialKeysCB));
     glutKeyboardFunc(Member2Callback(&ScreenManager::ProcessKeysCB));
+
+    SetupMenu();
 
     // Start rendering loop.
     glutMainLoop();
@@ -187,9 +189,7 @@ void ScreenManager::SetupScene(int objIndex) {
 }
 
 void ScreenManager::SetupMenu() {
-    // Create the main menu.
-    glutCreateMenu(Member2Callback(&ScreenManager::MenuCB));
-
+    // Create the menu and attach it to the right button.
     for (int i = 0; i < m_objNames.size(); i++)
         glutAddMenuEntry(m_objNames[i].c_str(), i + 1);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
