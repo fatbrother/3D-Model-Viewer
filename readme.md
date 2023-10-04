@@ -1,5 +1,42 @@
 # OpenGL HW
 
+- [OpenGL HW](#opengl-hw)
+  - [0. Introduction](#0-introduction)
+  - [1. Environment](#1-environment)
+    - [1.1. Linux](#11-linux)
+    - [1.2. Windows](#12-windows)
+  - [2. Build \& Run](#2-build--run)
+    - [2.1. Run on Linux](#21-run-on-linux)
+    - [2.2. Run on Windows](#22-run-on-windows)
+  - [3. Result](#3-result)
+    - [3.1. Bunny](#31-bunny)
+    - [3.2. ColorCube](#32-colorcube)
+    - [3.3. Forklift](#33-forklift)
+    - [3.4. Koffing](#34-koffing)
+    - [3.5. Gengar](#35-gengar)
+    - [3.6. Teapot](#36-teapot)
+  - [4. Details](#4-details)
+    - [4.1. Smart pointer](#41-smart-pointer)
+    - [4.2. C++17 filesystem::path](#42-c17-filesystempath)
+    - [4.3. Pragma once](#43-pragma-once)
+    - [4.4. Namespace](#44-namespace)
+    - [4.5. Select model menu](#45-select-model-menu)
+    - [4.6. Encapsulate glut functions](#46-encapsulate-glut-functions)
+    - [4.7. Template wrap function](#47-template-wrap-function)
+    - [4.8. Load model](#48-load-model)
+  - [5. Project structure](#5-project-structure)
+  - [6. Commit message](#6-commit-message)
+
+## 0. Introduction
+
+This is a homework of CG2023 Computer Graphics course in NTPU, Taiwan.
+
+In this homework, professor ask us to use Glew, Freeglut, and GLM to implement a simple OpenGL program.
+
+The default code given by the professor is write with a more C-style way, and I try to encapsulate it more object-oriented.
+
+There some modern C++ features I use in this homework, such as smart pointer, filesystem::path, pragma once, namespace, template wrap function, and so on.
+
 ## 1. Environment
 
 ### 1.1. Linux
