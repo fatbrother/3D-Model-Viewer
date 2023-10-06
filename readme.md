@@ -24,6 +24,7 @@
     - [4.6. Encapsulate glut functions](#46-encapsulate-glut-functions)
     - [4.7. Template wrap function](#47-template-wrap-function)
     - [4.8. Load model](#48-load-model)
+    - [4.9. Private implementation](#49-private-implementation)
   - [5. Project structure](#5-project-structure)
   - [6. Commit message](#6-commit-message)
 
@@ -241,6 +242,17 @@ Use thread to load model asynchronously.
 +     std::thread thread(threadFunc, i, basePath, m_objNames, MVP, std::ref(m_meshes));
 +     thread.detach();
 + }
+```
+
+### 4.9. Private implementation
+
+Use pimpl idiom to hide implementation details.
+
+It's also have the benefit of reducing compile time, because the header file doesn't need to include all the implementation details.
+
+```diff
++ struct Impl;
++ std::unique_ptr<Impl> pImpl;
 ```
 
 ## 5. Project structure
