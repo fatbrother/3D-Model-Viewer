@@ -1,28 +1,87 @@
 #include "TriangleMesh.h"
 
+// OpenGL and FreeGlut headers.
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+
+// GLM headers.
+#include <glm/gtc/type_ptr.hpp>
+
 // C++ STL headers.
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
-using namespace opengl_homework;
+namespace opengl_homework {
+
+// VertexPTN Declarations.
+struct TriangleMesh::VertexPTN {
+	VertexPTN() {
+		position = glm::vec3(0.0f, 0.0f, 0.0f);
+		normal = glm::vec3(0.0f, 1.0f, 0.0f);
+		texcoord = glm::vec2(0.0f, 0.0f);
+	}
+	VertexPTN(glm::vec3 p, glm::vec3 n, glm::vec2 uv) {
+		position = p;
+		normal = n;
+		texcoord = uv;
+	}
+	glm::vec3 position;
+	glm::vec3 normal;
+	glm::vec2 texcoord;
+};
+
+// TriangleMesh Private Declarations.
+struct TriangleMesh::Impl {
+	// TriangleMesh Private Data.
+	GLuint vboId;
+	GLuint iboId;
+	std::vector<VertexPTN> vertices;
+	std::vector<unsigned int> vertexIndices;
+
+	std::string name;
+	int numVertices;
+	int numTriangles;
+	glm::vec3 objCenter;
+};
+
+// Desc: Get the number of vertices.
+int TriangleMesh::GetNumVertices() const {
+	return pImpl->numVertices;
+}
+
+// Desc: Get the number of triangles.
+int TriangleMesh::GetNumTriangles() const {
+	return pImpl->numTriangles;
+}
+
+// Desc: Get the number of indices.
+int TriangleMesh::GetNumIndices() const {
+	return pImpl->vertexIndices.size();
+}
+
+// Desc: Get the center of the model.
+glm::vec3 TriangleMesh::GetObjCenter() const {
+	return pImpl->objCenter;
+}
 
 // Desc: Constructor of a triangle mesh.
 TriangleMesh::TriangleMesh(const std::filesystem::path& filePath, const bool normalized = true) {
-	name = filePath.stem().string();
-	numVertices = 0;
-	numTriangles = 0;
-	objCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+	pImpl = std::make_unique<Impl>();
+	pImpl->name = filePath.stem().string();
+	pImpl->numVertices = 0;
+	pImpl->numTriangles = 0;
+	pImpl->objCenter = glm::vec3(0.0f, 0.0f, 0.0f);
 	LoadFromFile(filePath, normalized);
 }
 
 // Desc: Destructor of a triangle mesh.
 TriangleMesh::~TriangleMesh() {
-	vertices.clear();
-	vertexIndices.clear();
-	glDeleteBuffers(1, &vboId);
-	glDeleteBuffers(1, &iboId);
+	pImpl->vertices.clear();
+	pImpl->vertexIndices.clear();
+	ReleaseBuffers();
 }
 
 // Desc: Load the geometry data of the model from file and normalize it.
@@ -85,14 +144,14 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 			vertex3.position = positions[std::stoi(v3p) - 1];
 			vertex3.texcoord = texcoords[std::stoi(v3t) - 1];
 			vertex3.normal = normals[std::stoi(v3n) - 1];
-			vertices.push_back(vertex1);
-			vertices.push_back(vertex2);
-			vertices.push_back(vertex3);
-			vertexIndices.push_back(numVertices);
-			vertexIndices.push_back(numVertices + 1);
-			vertexIndices.push_back(numVertices + 2);
-			numVertices += 3;
-			numTriangles += 1;
+			pImpl->vertices.push_back(vertex1);
+			pImpl->vertices.push_back(vertex2);
+			pImpl->vertices.push_back(vertex3);
+			pImpl->vertexIndices.push_back(pImpl->numVertices);
+			pImpl->vertexIndices.push_back(pImpl->numVertices + 1);
+			pImpl->vertexIndices.push_back(pImpl->numVertices + 2);
+			pImpl->numVertices += 3;
+			pImpl->numTriangles += 1;
 		}
 	}
 
@@ -102,14 +161,14 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 		// Normalize the model.
 		glm::vec3 minPos = glm::vec3(1e9, 1e9, 1e9);
 		glm::vec3 maxPos = glm::vec3(-1e9, -1e9, -1e9);
-		for (int i = 0; i < numVertices; ++i) {
-			minPos = glm::min(minPos, vertices[i].position);
-			maxPos = glm::max(maxPos, vertices[i].position);
+		for (int i = 0; i < pImpl->numVertices; ++i) {
+			minPos = glm::min(minPos, pImpl->vertices[i].position);
+			maxPos = glm::max(maxPos, pImpl->vertices[i].position);
 		}
-		objCenter = minPos + (maxPos - minPos) * 0.5f;
+		pImpl->objCenter = minPos + (maxPos - minPos) * 0.5f;
 		float maxLen = std::max(maxPos.x - minPos.x, std::max(maxPos.y - minPos.y, maxPos.z - minPos.z));
-		for (int i = 0; i < numVertices; ++i) {
-			vertices[i].position = (vertices[i].position - objCenter) / maxLen;
+		for (int i = 0; i < pImpl->numVertices; ++i) {
+			pImpl->vertices[i].position = (pImpl->vertices[i].position - pImpl->objCenter) / maxLen;
 		}
 	}
 
@@ -119,13 +178,19 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 
 // Desc: Create vertex buffer and index buffer.
 void TriangleMesh::CreateBuffers() {
-	glGenBuffers(1, &vboId);
-	glBindBuffer(GL_ARRAY_BUFFER, vboId);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(VertexPTN), vertices.data(), GL_STATIC_DRAW);
+	glGenBuffers(1, &(pImpl->vboId));
+	glBindBuffer(GL_ARRAY_BUFFER, pImpl->vboId);
+	glBufferData(GL_ARRAY_BUFFER, pImpl->numVertices * sizeof(VertexPTN), pImpl->vertices.data(), GL_STATIC_DRAW);
 
-	glGenBuffers(1, &iboId);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexIndices.size() * sizeof(unsigned int), vertexIndices.data(), GL_STATIC_DRAW);
+	glGenBuffers(1, &(pImpl->iboId));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pImpl->iboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, pImpl->vertexIndices.size() * sizeof(unsigned int), pImpl->vertexIndices.data(), GL_STATIC_DRAW);
+}
+
+// Desc: Release vertex buffer and index buffer.
+void TriangleMesh::ReleaseBuffers() {
+	glDeleteBuffers(1, &(pImpl->vboId));
+	glDeleteBuffers(1, &(pImpl->iboId));
 }
 
 // Desc: Render the mesh.
@@ -137,7 +202,7 @@ void TriangleMesh::Render() const {
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, texcoord));
 
-	glDrawElements(GL_TRIANGLES, vertexIndices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, pImpl->vertexIndices.size(), GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -146,19 +211,22 @@ void TriangleMesh::Render() const {
 
 // Desc: Apply transformation to all vertices (DON'T NEED TO TOUCH)
 void TriangleMesh::ApplyTransformCPU(const glm::mat4x4& mvpMatrix) {
-	for (int i = 0; i < numVertices; ++i) {
-		glm::vec4 p = mvpMatrix * glm::vec4(vertices[i].position, 1.0f);
+	for (int i = 0; i < pImpl->numVertices; ++i) {
+		glm::vec4 p = mvpMatrix * glm::vec4(pImpl->vertices[i].position, 1.0f);
 		if (p.w != 0.0f) {
 			float inv = 1.0f / p.w;
-			vertices[i].position = p * inv;
+			pImpl->vertices[i].position = p * inv;
 		}
 	}
 }
 
 // Desc: Print mesh information.
 void TriangleMesh::PrintMeshInfo() const {
-	std::cout << "[*] Mesh Info: " << name << std::endl;
-	std::cout << "# Vertices: " << numVertices << std::endl;
-	std::cout << "# Triangles: " << numTriangles << std::endl;
-	std::cout << "Center: (" << objCenter.x << " , " << objCenter.y << " , " << objCenter.z << ")" << std::endl;
+	std::cout << "[*] Mesh Info: " << pImpl->name << std::endl;
+	std::cout << "# Vertices: " << pImpl->numVertices << std::endl;
+	std::cout << "# Triangles: " << pImpl->numTriangles << std::endl;
+	std::cout << "Center: (" << pImpl->objCenter.x << " , " 
+			  << pImpl->objCenter.y << " , " << pImpl->objCenter.z << ")" << std::endl;
 }
+
+} // namespace opengl_homework

@@ -1,36 +1,12 @@
 #pragma once
 
-// OpenGL and FreeGlut headers.
-#include <GL/glew.h>
-#include <GL/freeglut.h>
-
-// GLM.
+// GLM headers.
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 // C++ STL headers.
 #include <filesystem>
-#include <vector>
 
 namespace opengl_homework {
-
-// VertexPTN Declarations.
-struct VertexPTN
-{
-	VertexPTN() {
-		position = glm::vec3(0.0f, 0.0f, 0.0f);
-		normal = glm::vec3(0.0f, 1.0f, 0.0f);
-		texcoord = glm::vec2(0.0f, 0.0f);
-	}
-	VertexPTN(glm::vec3 p, glm::vec3 n, glm::vec2 uv) {
-		position = p;
-		normal = n;
-		texcoord = uv;
-	}
-	glm::vec3 position;
-	glm::vec3 normal;
-	glm::vec2 texcoord;
-};
 
 /**
  * @brief TriangleMesh class.
@@ -48,6 +24,11 @@ public:
 	void CreateBuffers();
 
 	/**
+	 * @brief Release buffers.
+	*/
+	void ReleaseBuffers();
+
+	/**
 	 * @brief Render the mesh.
 	*/
 	void Render() const;
@@ -59,12 +40,27 @@ public:
 	*/
 	void ApplyTransformCPU(const glm::mat4x4& mvpMatrix);
 
-	int GetNumVertices() const { return numVertices; }
-	int GetNumTriangles() const { return numTriangles; }
-	int GetNumIndices() const { return static_cast<int>(vertexIndices.size()); }
-	glm::vec3 GetObjCenter() const { return objCenter; }
+	int GetNumVertices() const;
+	int GetNumTriangles() const;
+	int GetNumIndices() const;
+	glm::vec3 GetObjCenter() const;
 
 private:
+
+	// VertexPTN Declarations.
+	struct VertexPTN;
+
+	/**
+	 * @brief TriangleMesh Private Declarations.
+	 * @details This struct is used to hide the implementation 
+	 * details of TriangleMesh and remove the dependency on 
+	 * libraries to speed up compilation.
+	 * 
+	 * @note This is a common technique to hide implementation
+	*/
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
+
 	/**
 	 * @brief Load a model from obj file.
 	 *
@@ -76,17 +72,6 @@ private:
 	bool LoadFromFile(const std::filesystem::path&, const bool);
 	// TriangleMesh Private Methods.
 	void PrintMeshInfo() const;
-
-	// TriangleMesh Private Data.
-	GLuint vboId;
-	GLuint iboId;
-	std::vector<VertexPTN> vertices;
-	std::vector<unsigned int> vertexIndices;
-
-	std::string name;
-	int numVertices;
-	int numTriangles;
-	glm::vec3 objCenter;
 };
 
 }

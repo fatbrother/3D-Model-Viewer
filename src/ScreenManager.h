@@ -1,7 +1,7 @@
 #pragma once
 
-// My headers.
-#include "TriangleMesh.h"
+// C++ STL headers.
+#include <memory>
 
 namespace opengl_homework {
 
@@ -21,13 +21,7 @@ public:
      *
      * @return std::shared_ptr<ScreenManager>
      */
-    static std::shared_ptr<ScreenManager> GetInstance() {
-        static std::shared_ptr<ScreenManager> instance(new ScreenManager);
-        return instance;      
-    }
-
-    ~ScreenManager() { ReleaseResources(); }
-
+    static std::shared_ptr<ScreenManager> GetInstance();
 
     /**
      * @brief Start the rendering loop.
@@ -35,11 +29,11 @@ public:
     void Start(int, char**);
 
 private:
+    // ScreenManager Private Methods.
     ScreenManager();
 
     void SetupRenderState();
     void SetupScene(int);
-    void ReleaseResources();
     void ReshapeCB(int, int);
     void ProcessSpecialKeysCB(int, int, int);
     void ProcessKeysCB(unsigned char, int, int);
@@ -57,19 +51,12 @@ private:
      * @note Usage: glutRegisterFunc(Member2Callback(&ScreenManager::MemberFunc));
     */
     template<typename... Args>
-    static auto Member2Callback(void(ScreenManager::* func)(Args...)) -> void(*)(Args...) {
-        static void(ScreenManager:: * s_func)(Args...) = func;
-        return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
-    }
-
+    static auto Member2Callback(void(ScreenManager::* func)(Args...));
+    
 private:
-    int m_width = 600;
-    int m_height = 600;
-    std::vector<std::string> m_objNames;
-
-    using MeshPtr = std::shared_ptr<opengl_homework::TriangleMesh>;
-    std::vector<MeshPtr> m_meshes;
-    MeshPtr m_currentMesh;
+    // ScreenManager Private Data.
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
 };
 
 }

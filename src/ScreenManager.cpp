@@ -1,10 +1,48 @@
 #include <ScreenManager.h>
 
+// OpenGL and FreeGlut headers.
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+
+// GLM headers.
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 // C++ STL headers.
 #include <iostream>
 #include <thread>
+#include <vector>
+#include <mutex>
 
-using namespace opengl_homework;
+// My headers.
+#include "TriangleMesh.h"
+
+namespace opengl_homework {
+
+using MeshPtr = std::shared_ptr<opengl_homework::TriangleMesh>;
+
+std::shared_ptr<ScreenManager> ScreenManager::GetInstance() {
+    static std::shared_ptr<ScreenManager> instance(new ScreenManager());
+    return instance;
+}
+
+template<typename... Args>
+auto ScreenManager::Member2Callback(void(ScreenManager::* func)(Args...)) {
+    static void(ScreenManager:: * s_func)(Args...) = func;
+    return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
+}
+
+// ------------------------------------------------------------------------
+// Private member implementations. ----------------------------------------
+// ------------------------------------------------------------------------
+struct ScreenManager::Impl {
+    int width;
+    int height;
+    std::vector<std::string> objNames;
+    std::vector<MeshPtr> meshes;
+    MeshPtr currentMesh;
+    std::mutex mutex;
+};
 
 // ------------------------------------------------------------------------
 // Public member functions. -----------------------------------------------
@@ -14,7 +52,7 @@ void ScreenManager::Start(int argc, char** argv) {
     // Setting window properties.
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-    glutInitWindowSize(m_width, m_height);
+    glutInitWindowSize(pImpl->width, pImpl->height);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("HW1: OBJ Loader");
 
@@ -50,10 +88,14 @@ void ScreenManager::Start(int argc, char** argv) {
 // ------------------------------------------------------------------------
 
 ScreenManager::ScreenManager() {
+    pImpl = std::make_unique<Impl>();
+    pImpl->width = 600;
+    pImpl->height = 600;
+
     // Load all obj files in the models directory.
     for (const auto& entry : std::filesystem::directory_iterator("models")) {
         if (entry.path().extension() == ".obj") {
-            m_objNames.push_back(entry.path().stem().string());
+            pImpl->objNames.push_back(entry.path().stem().string());
         }
     }
 
@@ -69,7 +111,7 @@ ScreenManager::ScreenManager() {
     glm::mat4x4 V = glm::lookAt(cameraPos, cameraTarget, cameraUp);
     // Projection.
     float fov = 40.0f;
-    float aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
+    float aspectRatio = static_cast<float>(pImpl->width) / static_cast<float>(pImpl->height);
     float zNear = 0.1f;
     float zFar = 100.0f;
     glm::mat4x4 P = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
@@ -80,36 +122,36 @@ ScreenManager::ScreenManager() {
     // find the minimum bytes size of the obj files and swap it to the first position
     int min = INT_MAX;
     int minIndex = 0;
-    for (int i = 0; i < m_objNames.size(); i++) {
-        auto size = std::filesystem::file_size("models/" + m_objNames[i] + ".obj");
+    for (int i = 0; i < pImpl->objNames.size(); i++) {
+        auto size = std::filesystem::file_size("models/" + pImpl->objNames[i] + ".obj");
         if (size < min) {
             min = size;
             minIndex = i;
         }
     }
-    std::swap(m_objNames[0], m_objNames[minIndex]);
+    std::swap(pImpl->objNames[0], pImpl->objNames[minIndex]);
 
     // Load all obj files.
     auto basePath = std::filesystem::path("models");
-    m_meshes.resize(m_objNames.size());
+    pImpl->meshes.resize(pImpl->objNames.size());
 
     // Load first model in the main thread.
-    auto firstFilePath = basePath / (m_objNames[0] + ".obj");
-    m_meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
-    m_meshes[0]->ApplyTransformCPU(MVP);
+    auto firstFilePath = basePath / (pImpl->objNames[0] + ".obj");
+    pImpl->meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
+    pImpl->meshes[0]->ApplyTransformCPU(MVP);
 
     auto threadFunc = [](
         int i,
         const std::filesystem::path& basePath,
-        const std::vector<std::string>& m_objNames,
+        const std::vector<std::string>& objNames,
         const glm::mat4x4& MVP,
-        std::vector<MeshPtr>& m_meshes) {
-            auto filePath = basePath / (m_objNames[i] + ".obj");
-            m_meshes[i] = std::make_shared<TriangleMesh>(filePath, true);
-            m_meshes[i]->ApplyTransformCPU(MVP);
+        std::vector<MeshPtr>& meshes) {
+            auto filePath = basePath / (objNames[i] + ".obj");
+            meshes[i] = std::make_shared<TriangleMesh>(filePath, true);
+            meshes[i]->ApplyTransformCPU(MVP);
         };
-    for (int i = 1; i < m_objNames.size(); i++) {
-        std::thread thread(threadFunc, i, basePath, m_objNames, MVP, std::ref(m_meshes));
+    for (int i = 1; i < pImpl->objNames.size(); i++) {
+        std::thread thread(threadFunc, i, basePath, pImpl->objNames, MVP, std::ref(pImpl->meshes));
         thread.detach();
     }
 }
@@ -118,7 +160,7 @@ ScreenManager::ScreenManager() {
 void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_currentMesh->Render();
+    pImpl->currentMesh->Render();
 
     glutSwapBuffers();
 }
@@ -154,16 +196,8 @@ void ScreenManager::ProcessSpecialKeysCB(int key, int x, int y) {
 void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
     // Handle other keyboard inputs those are not defined as special keys.
     if (key == 27) {
-        // Release memory allocation if needed.
-        ReleaseResources();
         exit(0);
     }
-}
-
-void ScreenManager::ReleaseResources() {
-    m_currentMesh = nullptr;
-    m_objNames.clear();
-    m_meshes.clear();
 }
 
 void ScreenManager::SetupRenderState() {
@@ -181,20 +215,24 @@ void ScreenManager::SetupRenderState() {
 // Load a model from obj file and apply transformation.
 // You can alter the parameters for dynamically loading a model.
 void ScreenManager::SetupScene(int objIndex) {
+    pImpl->meshes[objIndex]->ReleaseBuffers();
+
     // Apply transformation to the model.
-    m_currentMesh = m_meshes[objIndex];
+    pImpl->currentMesh = pImpl->meshes[objIndex];
 
     // Create and upload vertex/index buffers.
-    m_currentMesh->CreateBuffers();
+    pImpl->currentMesh->CreateBuffers();
 }
 
 void ScreenManager::SetupMenu() {
     // Create the menu and attach it to the right button.
-    for (int i = 0; i < m_objNames.size(); i++)
-        glutAddMenuEntry(m_objNames[i].c_str(), i + 1);
+    for (int i = 0; i < pImpl->objNames.size(); i++)
+        glutAddMenuEntry(pImpl->objNames[i].c_str(), i + 1);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 void ScreenManager::MenuCB(int value) {
     SetupScene(value - 1);
 }
+
+} // namespace opengl_homework
