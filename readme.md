@@ -195,6 +195,8 @@ Use template to wrap member function to glut callback function.
 
 Preprocess the model file and store with vector.
 
+`Maybe it's not a good idea to store all models in memory if there are too many models, but it's ok for this homework because the total size of all models is only 100k vertices.`
+
 ```diff
 + using MeshPtr = std::shared_ptr<opengl_homework::TriangleMesh>;
 + std::vector<MeshPtr> m_meshes;
