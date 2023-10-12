@@ -260,6 +260,7 @@ It's also have the benefit of reducing compile time, because the header file doe
 ```text
 .
 ├── CMakeLists.txt
+├── LICENSE
 ├── build
 │   ├── CMakeCache.txt
 │   ├── CMakeFiles
@@ -267,6 +268,7 @@ It's also have the benefit of reducing compile time, because the header file doe
 │   ├── bin
 │   │   └── CG2023_HW
 │   └── cmake_install.cmake
+├── build.bat
 ├── build.sh
 ├── images
 │   ├── bunny.png
