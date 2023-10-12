@@ -117,41 +117,30 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& filePath, const boo
 			texcoords.emplace_back(u, v);
 		}
 		else if (type == "f") {
-			std::string v1, v2, v3;
-			iss >> v1 >> v2 >> v3;
-			std::istringstream iss1(v1);
-			std::istringstream iss2(v2);
-			std::istringstream iss3(v3);
-			std::string v1p, v1t, v1n;
-			std::string v2p, v2t, v2n;
-			std::string v3p, v3t, v3n;
-			std::getline(iss1, v1p, '/');
-			std::getline(iss1, v1t, '/');
-			std::getline(iss1, v1n, '/');
-			std::getline(iss2, v2p, '/');
-			std::getline(iss2, v2t, '/');
-			std::getline(iss2, v2n, '/');
-			std::getline(iss3, v3p, '/');
-			std::getline(iss3, v3t, '/');
-			std::getline(iss3, v3n, '/');
-			VertexPTN vertex1, vertex2, vertex3;
-			vertex1.position = positions[std::stoi(v1p) - 1];
-			vertex1.texcoord = texcoords[std::stoi(v1t) - 1];
-			vertex1.normal = normals[std::stoi(v1n) - 1];
-			vertex2.position = positions[std::stoi(v2p) - 1];
-			vertex2.texcoord = texcoords[std::stoi(v2t) - 1];
-			vertex2.normal = normals[std::stoi(v2n) - 1];
-			vertex3.position = positions[std::stoi(v3p) - 1];
-			vertex3.texcoord = texcoords[std::stoi(v3t) - 1];
-			vertex3.normal = normals[std::stoi(v3n) - 1];
-			pImpl->vertices.push_back(vertex1);
-			pImpl->vertices.push_back(vertex2);
-			pImpl->vertices.push_back(vertex3);
-			pImpl->vertexIndices.push_back(pImpl->numVertices);
-			pImpl->vertexIndices.push_back(pImpl->numVertices + 1);
-			pImpl->vertexIndices.push_back(pImpl->numVertices + 2);
-			pImpl->numVertices += 3;
-			pImpl->numTriangles += 1;
+			int numVertices = 0;
+			std::string tocken;
+			while (iss >> tocken) {
+				std::istringstream viss(tocken);
+				std::string posIndexStr, texcoordIndexStr, normalIndexStr;
+				std::getline(viss, posIndexStr, '/');
+				std::getline(viss, texcoordIndexStr, '/');
+				std::getline(viss, normalIndexStr, '/');
+				int posIndex = std::stoi(posIndexStr) - 1;
+				int texcoordIndex = std::stoi(texcoordIndexStr) - 1;
+				int normalIndex = std::stoi(normalIndexStr) - 1;
+				pImpl->vertices.emplace_back(positions[posIndex], normals[normalIndex], texcoords[texcoordIndex]);
+				++numVertices;
+			}
+			
+			// Triangulate the polygon.
+			for (int i = 2; i < numVertices; ++i) {
+				pImpl->vertexIndices.push_back(pImpl->numVertices);
+				pImpl->vertexIndices.push_back(pImpl->numVertices + i - 1);
+				pImpl->vertexIndices.push_back(pImpl->numVertices + i);
+				++pImpl->numTriangles;
+			}	
+			pImpl->numVertices += numVertices;
+			pImpl->numTriangles += numVertices - 2;
 		}
 	}
 
