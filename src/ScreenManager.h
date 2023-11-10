@@ -2,6 +2,7 @@
 
 // C++ STL headers.
 #include <memory>
+#include <string>
 
 namespace opengl_homework {
 
@@ -34,6 +35,7 @@ private:
 
     void SetupRenderState();
     void SetupScene(int);
+    void SetupShaderLib();
     void ReshapeCB(int, int);
     void ProcessSpecialKeysCB(int, int, int);
     void ProcessKeysCB(unsigned char, int, int);
@@ -54,6 +56,12 @@ private:
     static auto Member2Callback(void(ScreenManager::* func)(Args...));
     
 private:
+    enum RenderStyle
+    {
+        FILL_COLOR,
+        VIS_NORMAL,
+    };
+
     // ScreenManager Private Data.
     struct Impl;
     std::unique_ptr<Impl> pImpl;

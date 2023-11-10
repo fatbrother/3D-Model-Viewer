@@ -33,17 +33,12 @@ public:
 	*/
 	void Render() const;
 
-	/**
-	 * @brief Apply transformation to the mesh on CPU.
-	 *
-	 * @param mvpMatrix Model-view-projection matrix.
-	*/
-	void ApplyTransformCPU(const glm::mat4x4& mvpMatrix);
-
 	int GetNumVertices() const;
 	int GetNumTriangles() const;
 	int GetNumIndices() const;
 	glm::vec3 GetObjCenter() const;
+	
+	void PrintMeshInfo() const;
 
 private:
 
@@ -64,14 +59,13 @@ private:
 	/**
 	 * @brief Load a model from obj file.
 	 *
-	 * @param filePath Path to the obj file.
+	 * @param objFilePath Path to the obj file.
 	 * @param normalized Normalize the model to fit in a unit cube.
 	 *
 	 * @return true if the model is loaded successfully.
 	*/
 	bool LoadFromFile(const std::filesystem::path&, const bool);
-	// TriangleMesh Private Methods.
-	void PrintMeshInfo() const;
+
 };
 
 }
