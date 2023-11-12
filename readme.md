@@ -63,7 +63,7 @@ There some modern C++ features I use in this homework, such as smart pointer, fi
 git clone https://github.com/fatbrother/OpenGL-HW.git
 cd OpenGL-HW
 
-git submodule update --init
+git submodule update --init --recursive
 vcpkg/bootstrap-vcpkg.sh
 ./vcpkg/vcpkg install freeglut glew glm
 
