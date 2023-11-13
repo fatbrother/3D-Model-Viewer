@@ -7,9 +7,10 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
+    branches:
+      - main
 jobs:
   build:
-    permissions: write-all
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -84,13 +85,18 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Create release archive
-      # Create a release archive containing the built program. This can be used as an artifact for deployment.
-      # See https://docs.github.com/en/actions/guides/storing-workflow-data-as-artifacts#archiving-the-release-artifact
-      uses: actions/create-release@v1
+    # - name: Test
+    #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
+    #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+    #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+    #   run: ctest --build-config ${{ matrix.build_type }}
+
+    - name: Create release
+      if: startsWith(github.ref, 'refs/tags/v')
       id: create_release
+      uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
@@ -98,19 +104,12 @@ jobs:
         prerelease: false
 
     - name: Upload release asset
-      # Upload the release archive as a release asset.
-      # See https://docs.github.com/en/actions/guides/storing-workflow-data-as-artifacts#uploading-the-release-artifact
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.strings.outputs.build-output-dir }}/Release.zip
-        asset_name: Release.zip
+        asset_path: ${{ steps.strings.outputs.build-output-dir }}
+        asset_name: ${{ matrix.os }}-${{ matrix.build_type }}.zip
         asset_content_type: application/zip
-
-    # - name: Test
-    #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
-    #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-    #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-    #   run: ctest --build-config ${{ matrix.build_type }}
