@@ -90,6 +90,9 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
+    - name: Install npm dependencies
+      run: npm install
+
     - name: Create release archive
       # Create a release archive containing the built program. This can be used as an artifact for deployment.
       # See https://docs.github.com/en/actions/guides/storing-workflow-data-as-artifacts#archiving-the-release-artifact
