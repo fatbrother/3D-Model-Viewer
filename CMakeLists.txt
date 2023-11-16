@@ -17,7 +17,6 @@ include_directories(${SOURCE_PATH})
 
 file (GLOB_RECURSE SOURCE_FILES ${SOURCE_PATH}/*.cpp ${SOURCE_PATH}/*.h)
 
-# add executable
 add_executable(CG2023_HW ${SOURCE_FILES})
 
 target_link_libraries(CG2023_HW PRIVATE $<IF:$<TARGET_EXISTS:FreeGLUT::freeglut>,FreeGLUT::freeglut,FreeGLUT::freeglut_static>)
