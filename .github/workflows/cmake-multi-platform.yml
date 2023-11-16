@@ -105,7 +105,6 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: ncipollo/release-action@v1.10.0
       with:
-        name: ${{ github.ref }}
         artifacts: build/bin/CG2023_HW.exe
 
     - name: Upload release asset
