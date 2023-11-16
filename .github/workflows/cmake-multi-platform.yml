@@ -91,7 +91,7 @@ jobs:
     - name: Create release
       uses: ncipollo/release-action@v1.10.0
       with:
-        artifacts: ${{ steps.strings.outputs.build-output-dir }} /**
+        artifacts: ${{ steps.strings.outputs.build-output-dir }}/**
         name: ${{ github.ref }}
 
     - name: Upload release asset
