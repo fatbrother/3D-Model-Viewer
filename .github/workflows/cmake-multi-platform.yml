@@ -88,26 +88,15 @@ jobs:
     #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
     #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
     #   run: ctest --build-config ${{ matrix.build_type }}
-
     - name: Create release
-      if: startsWith(github.ref, 'refs/tags/v')
-      id: create_release
-      uses: actions/create-release@latest
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      # if: startsWith(github.ref, 'refs/tags/v')
+      uses: ncipollo/release-action@v1.10.0
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+        artifacts: ${{ steps.strings.outputs.build-output-dir }}
 
     - name: Upload release asset
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: actions/upload-release-asset@latest
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      # if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/upload-artifact@v2
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.strings.outputs.build-output-dir }}
-        asset_name: ${{ matrix.os }}-${{ matrix.build_type }}.zip
-        asset_content_type: application/zip
+        name: ${{ github.ref }}
+        path: ${{ steps.strings.outputs.build-output-dir }}
