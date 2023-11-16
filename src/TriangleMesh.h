@@ -6,6 +6,10 @@
 // C++ STL headers.
 #include <filesystem>
 
+// Project headers.
+#include "Light.h"
+#include "ShaderProg.h"
+
 namespace opengl_homework {
 
 /**
@@ -31,26 +35,34 @@ public:
 	/**
 	 * @brief Render the mesh.
 	*/
-	void Render() const;
+	void Render(
+		const std::unique_ptr<PhongShadingDemoShaderProg>&, 
+		const glm::mat4&, 
+		const glm::mat4&, 
+		const glm::mat4&,
+		const glm::vec3&, 
+		const std::shared_ptr<DirectionalLight>&,
+		const std::shared_ptr<PointLight>&) const;
 
 	int GetNumVertices() const;
 	int GetNumTriangles() const;
 	int GetNumIndices() const;
 	glm::vec3 GetObjCenter() const;
-	
+
 	void PrintMeshInfo() const;
 
 private:
 
 	// VertexPTN Declarations.
 	struct VertexPTN;
+	struct SubMesh;
 
 	/**
 	 * @brief TriangleMesh Private Declarations.
-	 * @details This struct is used to hide the implementation 
-	 * details of TriangleMesh and remove the dependency on 
+	 * @details This struct is used to hide the implementation
+	 * details of TriangleMesh and remove the dependency on
 	 * libraries to speed up compilation.
-	 * 
+	 *
 	 * @note This is a common technique to hide implementation
 	*/
 	struct Impl;
@@ -66,6 +78,26 @@ private:
 	*/
 	bool LoadFromFile(const std::filesystem::path&, const bool);
 
+	/**
+	 * @brief Load material library.
+	 *
+	 * @param mtlFilePath Path to the mtl file.
+	 *
+	 * @return true if the material library is loaded successfully.
+	*/
+	bool LoadMtllib(const std::filesystem::path&);
+
+	/**
+	 * @brief Render submesh.
+	 * @details This function is used to render a submesh.
+	 * A submesh is a part of the model that has the same
+	 * material.
+	 * 
+	 * @param subMesh The submesh to render.
+	 * 
+	 * @note This function is called by Render().
+	*/
+	void RenderSubMesh(const SubMesh&) const;
 };
 
 }

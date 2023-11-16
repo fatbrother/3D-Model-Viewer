@@ -13,6 +13,11 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
+
+// Project headers.
+#include "Light.h"
+#include "Material.h"
 
 namespace opengl_homework {
 
@@ -33,12 +38,24 @@ struct TriangleMesh::VertexPTN {
 	glm::vec2 texcoord;
 };
 
+// SubMesh Declarations.
+struct TriangleMesh::SubMesh
+{
+	SubMesh() {
+		material = nullptr;
+		iboId = 0;
+	}
+	std::shared_ptr<PhongMaterial> material;
+	GLuint iboId;
+	std::vector<unsigned int> vertexIndices;
+};
+
 // TriangleMesh Private Declarations.
 struct TriangleMesh::Impl {
 	GLuint vboId;
-	GLuint iboId;
 	std::vector<VertexPTN> vertices;
-	std::vector<unsigned int> vertexIndices;
+	std::vector<SubMesh> subMeshes;
+	std::map<std::string, std::shared_ptr<PhongMaterial>> materials;
 
 	std::string name;
 	int numVertices;
@@ -59,7 +76,8 @@ int TriangleMesh::GetNumTriangles() const {
 
 // Desc: Get the number of indices.
 int TriangleMesh::GetNumIndices() const {
-	return pImpl->vertexIndices.size();
+	// return pImpl->vertexIndices.size();
+	return 0;
 }
 
 // Desc: Get the center of the model.
@@ -80,7 +98,7 @@ TriangleMesh::TriangleMesh(const std::filesystem::path& objFilePath, const bool 
 // Desc: Destructor of a triangle mesh.
 TriangleMesh::~TriangleMesh() {
 	pImpl->vertices.clear();
-	pImpl->vertexIndices.clear();
+	pImpl->subMeshes.clear();
 	ReleaseBuffers();
 }
 
@@ -101,7 +119,12 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& objFilePath, const 
 		std::istringstream iss(line);
 		std::string type;
 		iss >> type;
-		if (type == "v") {
+		if (type == "mtllib") {
+			std::string mtlFileName;
+			iss >> mtlFileName;
+			LoadMtllib(objFilePath.parent_path() / mtlFileName);
+		}
+		else if (type == "v") {
 			float x, y, z;
 			iss >> x >> y >> z;
 			positions.emplace_back(x, y, z);
@@ -134,12 +157,18 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& objFilePath, const 
 
 			// Triangulate the polygon.
 			for (int i = 2; i < numVertices; ++i) {
-				pImpl->vertexIndices.push_back(pImpl->numVertices);
-				pImpl->vertexIndices.push_back(pImpl->numVertices + i - 1);
-				pImpl->vertexIndices.push_back(pImpl->numVertices + i);
+				pImpl->subMeshes.back().vertexIndices.push_back(pImpl->numVertices);
+				pImpl->subMeshes.back().vertexIndices.push_back(pImpl->numVertices + i - 1);
+				pImpl->subMeshes.back().vertexIndices.push_back(pImpl->numVertices + i);
 			}
 			pImpl->numVertices += numVertices;
 			pImpl->numTriangles += numVertices - 2;
+		}
+		else if (type == "usemtl") {
+			std::string mtlName;
+			iss >> mtlName;
+			pImpl->subMeshes.emplace_back();
+			pImpl->subMeshes.back().material = pImpl->materials[mtlName];
 		}
 	}
 
@@ -165,35 +194,124 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& objFilePath, const 
 	return true;
 }
 
+bool TriangleMesh::LoadMtllib(const std::filesystem::path& mtlPath) {
+	std::ifstream fin(mtlPath);
+	if (!fin) {
+		std::cerr << "Error: cannot open file " << mtlPath << std::endl;
+		return false;
+	}
+
+	std::string line = "";
+	std::string curMtlName = "";
+	while (std::getline(fin, line)) {
+		std::istringstream iss(line);
+		std::string type;
+		iss >> type;
+		if (type == "newmtl") {
+			std::string mtlName;
+			iss >> mtlName;
+			curMtlName = mtlName;
+			pImpl->materials[curMtlName] = std::make_unique<PhongMaterial>();
+			pImpl->materials[curMtlName]->SetName(curMtlName);
+		}
+		else if (type == "Ka") {
+			float r, g, b;
+			iss >> r >> g >> b;
+			pImpl->materials[curMtlName]->SetKa(glm::vec3(r, g, b));
+		}
+		else if (type == "Kd") {
+			float r, g, b;
+			iss >> r >> g >> b;
+			pImpl->materials[curMtlName]->SetKd(glm::vec3(r, g, b));
+		}
+		else if (type == "Ks") {
+			float r, g, b;
+			iss >> r >> g >> b;
+			pImpl->materials[curMtlName]->SetKs(glm::vec3(r, g, b));
+		}
+		else if (type == "Ns") {
+			float n;
+			iss >> n;
+			pImpl->materials[curMtlName]->SetNs(n);
+		}
+	}
+
+	fin.close();
+
+	return true;
+}
+
 // Desc: Create vertex buffer and index buffer.
 void TriangleMesh::CreateBuffers() {
 	glGenBuffers(1, &(pImpl->vboId));
 	glBindBuffer(GL_ARRAY_BUFFER, pImpl->vboId);
 	glBufferData(GL_ARRAY_BUFFER, pImpl->vertices.size() * sizeof(VertexPTN), pImpl->vertices.data(), GL_STATIC_DRAW);
 
-	glGenBuffers(1, &(pImpl->iboId));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pImpl->iboId);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, pImpl->vertexIndices.size() * sizeof(unsigned int), pImpl->vertexIndices.data(), GL_STATIC_DRAW);
+	for (auto& subMesh : pImpl->subMeshes) {
+		glGenBuffers(1, &(subMesh.iboId));
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, subMesh.iboId);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, subMesh.vertexIndices.size() * sizeof(unsigned int), subMesh.vertexIndices.data(), GL_STATIC_DRAW);
+	}
 }
 
 // Desc: Release vertex buffer and index buffer.
 void TriangleMesh::ReleaseBuffers() {
 	glDeleteBuffers(1, &(pImpl->vboId));
-	glDeleteBuffers(1, &(pImpl->iboId));
+	for (auto& subMesh : pImpl->subMeshes) {
+		glDeleteBuffers(1, &(subMesh.iboId));
+	}
 }
 
 // Desc: Render the mesh.
-void TriangleMesh::Render() const {
+void TriangleMesh::Render(
+	const std::unique_ptr<PhongShadingDemoShaderProg>& shader,
+	const glm::mat4& MVP,
+	const glm::mat4& W,
+	const glm::mat4& NM,
+	const glm::vec3& ambientLight,
+	const std::shared_ptr<DirectionalLight>& dirLight,
+	const std::shared_ptr<PointLight>& pointLightObj) const {
+
+	for (auto& subMesh : pImpl->subMeshes) {
+		// Transformation matrix.
+		shader->Bind();
+
+		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(W));
+		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(W))));
+		glUniformMatrix4fv(shader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
+		// Material properties.
+		glUniform3fv(shader->GetLocKa(), 1, glm::value_ptr(subMesh.material->GetKa()));
+		glUniform3fv(shader->GetLocKd(), 1, glm::value_ptr(subMesh.material->GetKd()));
+		glUniform3fv(shader->GetLocKs(), 1, glm::value_ptr(subMesh.material->GetKs()));
+		glUniform1f(shader->GetLocNs(), subMesh.material->GetNs());
+		// Light data.
+		if (dirLight != nullptr) {
+			glUniform3fv(shader->GetLocDirLightDir(), 1, glm::value_ptr(dirLight->GetDirection()));
+			glUniform3fv(shader->GetLocDirLightRadiance(), 1, glm::value_ptr(dirLight->GetRadiance()));
+		}
+		if (pointLightObj != nullptr) {
+			glUniform3fv(shader->GetLocPointLightPos(), 1, glm::value_ptr(pointLightObj->GetPosition()));
+			glUniform3fv(shader->GetLocPointLightIntensity(), 1, glm::value_ptr(pointLightObj->GetIntensity()));
+		}
+		glUniform3fv(shader->GetLocAmbientLight(), 1, glm::value_ptr(ambientLight));
+
+		RenderSubMesh(subMesh);
+		shader->Unbind();
+	}
+}
+
+// Desc: Render the submesh.
+void TriangleMesh::RenderSubMesh(const TriangleMesh::SubMesh& subMesh) const {
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	// glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, pImpl->vboId);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, position));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, pImpl->iboId);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, normal));
-	// glEnableVertexAttribArray(2);
 	// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, texcoord));
 
-	glDrawElements(GL_TRIANGLES, pImpl->vertexIndices.size(), GL_UNSIGNED_INT, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, subMesh.iboId);
+	glDrawElements(GL_TRIANGLES, subMesh.vertexIndices.size(), GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -205,6 +323,7 @@ void TriangleMesh::PrintMeshInfo() const {
 	std::cout << "[*] Mesh Info: " << pImpl->name << std::endl;
 	std::cout << "# Vertices: " << pImpl->numVertices << std::endl;
 	std::cout << "# Triangles: " << pImpl->numTriangles << std::endl;
+	std::cout << "# Submeshes: " << pImpl->subMeshes.size() << std::endl;
 	std::cout << "Center: (" << pImpl->objCenter.x << " , "
 		<< pImpl->objCenter.y << " , " << pImpl->objCenter.z << ")" << std::endl;
 	std::cout << "Extent: (" << pImpl->objExtent.x << " , "

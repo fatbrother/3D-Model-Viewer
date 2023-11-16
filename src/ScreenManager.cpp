@@ -36,24 +36,14 @@ auto ScreenManager::Member2Callback(void(ScreenManager::* func)(Args...)) {
     return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
 }
 
-// SceneObject.
 struct SceneObject
 {
     SceneObject() {
         mesh = nullptr;
         worldMatrix = glm::mat4x4(1.0f);
-        Ka = glm::vec3(0.5f, 0.5f, 0.5f);
-        Kd = glm::vec3(0.8f, 0.8f, 0.8f);
-        Ks = glm::vec3(0.6f, 0.6f, 0.6f);
-        Ns = 50.0f;
     }
     MeshPtr mesh;
     glm::mat4x4 worldMatrix;
-    // Material properties.
-    glm::vec3 Ka;
-    glm::vec3 Kd;
-    glm::vec3 Ks;
-    float Ns;
 };
 
 // ScenePointLight (for visualization of a point light).
@@ -73,11 +63,10 @@ struct ScenePointLight
 // Private member implementations. ----------------------------------------
 // ------------------------------------------------------------------------
 struct ScreenManager::Impl {
-    Impl() : 
-        width(600), 
-        height(600), 
-        camera(std::make_unique<Camera>((float)width / (float)height)) 
-    {
+    Impl() :
+        width(600),
+        height(600),
+        camera(std::make_unique<Camera>((float)width / (float)height)) {
         sceneObj = std::make_unique<SceneObject>();
         pointLightObj = std::make_unique<ScenePointLight>();
     };
@@ -88,11 +77,11 @@ struct ScreenManager::Impl {
     std::vector<MeshPtr> meshes;
     RenderStyle renderStyle = RenderStyle::FILL_COLOR;
     std::unique_ptr<FillColorShaderProg> fillColorShader;
-    std::unique_ptr<GouraudShadingDemoShaderProg> gouraudShader;
+    std::unique_ptr<PhongShadingDemoShaderProg> phongShader;
     std::unique_ptr<SceneObject> sceneObj;
-    std::unique_ptr<ScenePointLight> pointLightObj;
     std::unique_ptr<Camera> camera;
-    std::unique_ptr<DirectionalLight> dirLight;
+    std::shared_ptr<DirectionalLight> dirLight;
+    std::shared_ptr<ScenePointLight> pointLightObj;
     glm::vec3 ambientLight = glm::vec3(0.6f, 0.6f, 0.6f);
     float lightMoveSpeed = 0.2f;
 };
@@ -119,7 +108,7 @@ void ScreenManager::Start(int argc, char** argv) {
     }
 
     pImpl->fillColorShader = std::make_unique<FillColorShaderProg>();
-    pImpl->gouraudShader = std::make_unique<GouraudShadingDemoShaderProg>();
+    pImpl->phongShader = std::make_unique<PhongShadingDemoShaderProg>();
 
     // Initialization.
     SetupRenderState();
@@ -149,8 +138,8 @@ ScreenManager::ScreenManager() {
 
     // Load all obj files in the models directory.
     for (const auto& entry : std::filesystem::directory_iterator("models")) {
-        if (entry.path().extension() == ".obj") {
-            pImpl->objNames.push_back(entry.path().stem().string());
+        if (entry.is_directory()) {
+            pImpl->objNames.push_back(entry.path().filename().string());
         }
     }
 
@@ -158,7 +147,7 @@ ScreenManager::ScreenManager() {
     int min = INT_MAX;
     int minIndex = 0;
     for (int i = 0; i < pImpl->objNames.size(); i++) {
-        auto size = std::filesystem::file_size("models/" + pImpl->objNames[i] + ".obj");
+        auto size = std::filesystem::file_size("models/" + pImpl->objNames[i] + "/" + pImpl->objNames[i] + ".obj");
         if (size < min) {
             min = size;
             minIndex = i;
@@ -170,7 +159,7 @@ ScreenManager::ScreenManager() {
     pImpl->meshes.resize(pImpl->objNames.size());
 
     // Load first model in the main thread.
-    auto firstFilePath = objBasePath / (pImpl->objNames[0] + ".obj");
+    auto firstFilePath = objBasePath / pImpl->objNames[0] / (pImpl->objNames[0] + ".obj");
     pImpl->meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
 
     auto threadFunc = [](
@@ -178,7 +167,7 @@ ScreenManager::ScreenManager() {
         const std::filesystem::path& objBasePath,
         const std::vector<std::string>& objNames,
         std::vector<MeshPtr>& meshes) {
-            auto objFilePath = objBasePath / (objNames[i] + ".obj");
+            auto objFilePath = objBasePath / objNames[i] / (objNames[i] + ".obj");
             meshes[i] = std::make_shared<TriangleMesh>(objFilePath, true);
         };
     for (int i = 1; i < pImpl->objNames.size(); i++) {
@@ -193,7 +182,7 @@ ScreenManager::ScreenManager() {
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     pImpl->camera->UpdateView(cameraPos, cameraTarget, cameraUp);
-    float aspectRatio = (float)pImpl->width / (float)pImpl->height; 
+    float aspectRatio = (float)pImpl->width / (float)pImpl->height;
     pImpl->camera->UpdateProjection(fovy, aspectRatio, zNear, zFar);
 }
 
@@ -203,48 +192,18 @@ void ScreenManager::RenderSceneCB() {
 
     // Update transform (assuming there might be dynamic transformations).
     glm::mat4x4 S = glm::scale(glm::mat4x4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
-    // glm::mat4x4 T = glm::translate(glm::mat4x4(1.0f), (pImpl->sceneObj->mesh->GetObjCenter()));
-    // pImpl->sceneObj->worldMatrix = S * T;
     pImpl->sceneObj->worldMatrix = S;
-    // glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(pImpl->camera->GetViewMatrix() * pImpl->sceneObj->worldMatrix));
+    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(pImpl->camera->GetViewMatrix() * pImpl->sceneObj->worldMatrix));
     glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * pImpl->camera->GetViewMatrix() * pImpl->sceneObj->worldMatrix;
 
-    // pImpl->gouraudShader->Bind();
-
-    // // Transformation matrix.
-    // glUniformMatrix4fv(pImpl->gouraudShader->GetLocM(), 1, GL_FALSE, glm::value_ptr(pImpl->sceneObj->worldMatrix));
-    // glUniformMatrix4fv(pImpl->gouraudShader->GetLocV(), 1, GL_FALSE, glm::value_ptr(pImpl->camera->GetViewMatrix()));
-    // glUniformMatrix4fv(pImpl->gouraudShader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(normalMatrix));
-    // glUniformMatrix4fv(pImpl->gouraudShader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
-    // // Material properties.
-    // glUniform3fv(pImpl->gouraudShader->GetLocKa(), 1, glm::value_ptr(pImpl->sceneObj->Ka));
-    // glUniform3fv(pImpl->gouraudShader->GetLocKd(), 1, glm::value_ptr(pImpl->sceneObj->Kd));
-    // glUniform3fv(pImpl->gouraudShader->GetLocKs(), 1, glm::value_ptr(pImpl->sceneObj->Ks));
-    // glUniform1f(pImpl->gouraudShader->GetLocNs(), pImpl->sceneObj->Ns);
-    // // Light data.
-    // if (pImpl->dirLight != nullptr) {
-    //     glUniform3fv(pImpl->gouraudShader->GetLocDirLightDir(), 1, glm::value_ptr(pImpl->dirLight->GetDirection()));
-    //     glUniform3fv(pImpl->gouraudShader->GetLocDirLightRadiance(), 1, glm::value_ptr(pImpl->dirLight->GetRadiance()));
-    // }
-    // if (pImpl->pointLightObj->light != nullptr) {
-    //     glUniform3fv(pImpl->gouraudShader->GetLocPointLightPos(), 1, glm::value_ptr(pImpl->pointLightObj->light->GetPosition()));
-    //     glUniform3fv(pImpl->gouraudShader->GetLocPointLightIntensity(), 1, glm::value_ptr(pImpl->pointLightObj->light->GetIntensity()));
-    // }
-    
-    // glUniform3fv(pImpl->gouraudShader->GetLocAmbientLight(), 1, glm::value_ptr(pImpl->ambientLight));
-
-    // pImpl->sceneObj->mesh->Render();
-
-    // pImpl->gouraudShader->Unbind();
-
-    pImpl->fillColorShader->Bind();
-
-    glUniformMatrix4fv(pImpl->fillColorShader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
-    glUniform3fv(pImpl->fillColorShader->GetLocFillColor(), 1, glm::value_ptr(pImpl->pointLightObj->visColor));
-
-    pImpl->sceneObj->mesh->Render();
-
-    pImpl->fillColorShader->Unbind();
+    pImpl->sceneObj->mesh->Render(
+        pImpl->phongShader,
+        MVP,
+        pImpl->sceneObj->worldMatrix,
+        normalMatrix,
+        pImpl->ambientLight,
+        pImpl->dirLight,
+        pImpl->pointLightObj->light);
 
     // Visualize the light with fill color. ------------------------------------------------------
     // Bind shader and set parameters.
@@ -253,15 +212,15 @@ void ScreenManager::RenderSceneCB() {
         glm::mat4x4 T = glm::translate(glm::mat4x4(1.0f), (pointLight->GetPosition()));
         pImpl->pointLightObj->worldMatrix = T;
         glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * pImpl->camera->GetViewMatrix() * pImpl->pointLightObj->worldMatrix;
-        
+
         pImpl->fillColorShader->Bind();
-        
+
         glUniformMatrix4fv(pImpl->fillColorShader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
         glUniform3fv(pImpl->fillColorShader->GetLocFillColor(), 1, glm::value_ptr(pImpl->pointLightObj->visColor));
-        
+
         // Render the point light.
         pImpl->pointLightObj->light->Draw();
-        
+
         pImpl->fillColorShader->Unbind();
     }
 
@@ -274,25 +233,9 @@ void ScreenManager::ReshapeCB(int w, int h) {
     // Implemented in HW2.
 }
 
-void ScreenManager::ProcessSpecialKeysCB(int key, int x, int y)
-{
-    // Handle special (functional) keyboard inputs such as F1, spacebar, page up, etc. 
-    switch (key) {
-    // Rendering mode.
-    case GLUT_KEY_F1:
-        // Render with point mode.
-        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-        break;
-    case GLUT_KEY_F2:
-        // Render with line mode.
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        break;
-    case GLUT_KEY_F3:
-        // Render with fill mode.
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        break;
-    
+void ScreenManager::ProcessSpecialKeysCB(int key, int x, int y) {
     // Light control.
+    switch (key) {
     case GLUT_KEY_LEFT:
         if (pImpl->pointLightObj->light != nullptr)
             pImpl->pointLightObj->light->MoveLeft(pImpl->lightMoveSpeed);
@@ -323,7 +266,7 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
 }
 
 void ScreenManager::SetupRenderState() {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_DEPTH_TEST);
 
     glm::vec4 clearColor = glm::vec4(0.44f, 0.57f, 0.75f, 1.00f);
     glClearColor(
@@ -343,11 +286,11 @@ void ScreenManager::SetupScene(int objIndex) {
     pImpl->sceneObj->mesh = pImpl->meshes[objIndex];
     pImpl->sceneObj->mesh->CreateBuffers();
 
-    glm::vec3 dirLightDirection = glm::vec3(1.0f, -1.0f, 0.0f);
-    glm::vec3 dirLightRadiance = glm::vec3(0.3f, 0.3f, 0.9f);
+    glm::vec3 dirLightDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 dirLightRadiance = glm::vec3(0.6f, 0.6f, 0.6f);
     glm::vec3 pointLightPosition = glm::vec3(0.8f, 0.f, 0.8f);
     glm::vec3 pointLightIntensity = glm::vec3(0.5f, 0.1f, 0.1f);
-    glm::vec3 ambientLight = glm::vec3(0.6f, 0.6f, 0.6f);
+    glm::vec3 ambientLight = glm::vec3(0.2f, 0.2f, 0.2f);
     pImpl->dirLight = std::make_unique<DirectionalLight>(dirLightDirection, dirLightRadiance);
     pImpl->pointLightObj->light = std::make_shared<PointLight>(pointLightPosition, pointLightIntensity);
     pImpl->pointLightObj->visColor = glm::normalize((pImpl->pointLightObj->light->GetIntensity()));
@@ -360,8 +303,8 @@ void ScreenManager::SetupShaderLib() {
         exit(EXIT_FAILURE);
     }
 
-    pImpl->gouraudShader = std::make_unique<GouraudShadingDemoShaderProg>();
-    if (!pImpl->gouraudShader->LoadFromFiles("shaders/gouraud_shading_demo.vs", "shaders/gouraud_shading_demo.fs")) {
+    pImpl->phongShader = std::make_unique<PhongShadingDemoShaderProg>();
+    if (!pImpl->phongShader->LoadFromFiles("shaders/phong_shading_demo.vs", "shaders/phong_shading_demo.fs")) {
         std::cerr << "Failed to load gouraud shader." << std::endl;
         exit(EXIT_FAILURE);
     }

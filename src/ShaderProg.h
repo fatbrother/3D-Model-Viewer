@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include <glm/glm.hpp>
 #include <GL/glew.h>
+
+#include "ShaderProg.h"
 
 // ShaderProg Declarations.
 class ShaderProg
@@ -57,17 +58,17 @@ private:
 
 // ------------------------------------------------------------------------------------------------
 
-// GouraudShadingDemoShaderProg Declarations.
-class GouraudShadingDemoShaderProg : public ShaderProg
+// PhongShadingDemoShaderProg Declarations.
+class PhongShadingDemoShaderProg : public ShaderProg
 {
 public:
-	// GouraudShadingDemoShaderProg Public Methods.
-	GouraudShadingDemoShaderProg();
-	~GouraudShadingDemoShaderProg();
+	// PhongShadingDemoShaderProg Public Methods.
+	PhongShadingDemoShaderProg();
+	~PhongShadingDemoShaderProg();
 
 	GLint GetLocM() const { return locM; }
-	GLint GetLocV() const { return locV; }
 	GLint GetLocNM() const { return locNM; }
+	GLint GetLocCameraPos() const { return locCameraPos; }
 	GLint GetLocKa() const { return locKa; }
 	GLint GetLocKd() const { return locKd; }
 	GLint GetLocKs() const { return locKs; }
@@ -77,17 +78,20 @@ public:
 	GLint GetLocDirLightRadiance() const { return locDirLightRadiance; }
 	GLint GetLocPointLightPos() const { return locPointLightPos; }
 	GLint GetLocPointLightIntensity() const { return locPointLightIntensity; }
-	
+	// -------------------------------------------------------
+	// Add your methods for spot light.
+	// -------------------------------------------------------
+
 protected:
-	// GouraudShadingDemoShaderProg Protected Methods.
+	// PhongShadingDemoShaderProg Protected Methods.
 	void GetUniformVariableLocation();
 
 private:
-	// GouraudShadingDemoShaderProg Public Data.
+	// PhongShadingDemoShaderProg Public Data.
 	// Transformation matrix.
 	GLint locM;
-	GLint locV;
 	GLint locNM;
+	GLint locCameraPos;
 	// Material properties.
 	GLint locKa;
 	GLint locKd;
@@ -99,4 +103,7 @@ private:
 	GLint locDirLightRadiance;
 	GLint locPointLightPos;
 	GLint locPointLightIntensity;
+	// -------------------------------------------------------
+	// Add your data for spot light.
+	// -------------------------------------------------------
 };

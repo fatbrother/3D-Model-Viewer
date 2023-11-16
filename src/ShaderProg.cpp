@@ -1,11 +1,12 @@
-#include "ShaderProg.h"
+#include "ShaderProg.h" 
 
 #include <iostream>
 #include <fstream>
 
 #define MAX_BUFFER_SIZE 1024
 
-ShaderProg::ShaderProg() {
+ShaderProg::ShaderProg()
+{
     // Create OpenGL shader program.
     shaderProgId = glCreateProgram();
     if (shaderProgId == 0) {
@@ -16,11 +17,13 @@ ShaderProg::ShaderProg() {
     locMVP = -1;
 }
 
-ShaderProg::~ShaderProg() {
+ShaderProg::~ShaderProg()
+{
     glDeleteProgram(shaderProgId);
 }
 
-bool ShaderProg::LoadFromFiles(const std::string vsFilePath, const std::string fsFilePath) {
+bool ShaderProg::LoadFromFiles(const std::string vsFilePath, const std::string fsFilePath)
+{
     // Load the vertex shader from a source file and attach it to the shader program.
     std::string vs, fs;
     if (!LoadShaderTextFromFile(vsFilePath, vs)) {
@@ -43,7 +46,7 @@ bool ShaderProg::LoadFromFiles(const std::string vsFilePath, const std::string f
     glGetProgramiv(shaderProgId, GL_LINK_STATUS, &success);
     if (success == 0) {
         glGetProgramInfoLog(shaderProgId, sizeof(errorLog), NULL, errorLog);
-        std::cerr << "[ERROR] Failed to link shader program: " << errorLog << std::endl;
+        std::cerr << "[ERROR] Failed to link shader program: " <<  errorLog << std::endl;
         return false;
     }
 
@@ -66,11 +69,13 @@ bool ShaderProg::LoadFromFiles(const std::string vsFilePath, const std::string f
     return true;
 }
 
-void ShaderProg::GetUniformVariableLocation() {
+void ShaderProg::GetUniformVariableLocation()
+{
     locMVP = glGetUniformLocation(shaderProgId, "MVP");
 }
 
-GLuint ShaderProg::AddShader(const std::string& sourceText, GLenum shaderType) {
+GLuint ShaderProg::AddShader(const std::string& sourceText, GLenum shaderType)
+{
     GLuint shaderObj = glCreateShader(shaderType);
     if (shaderObj == 0) {
         std::cerr << "[ERROR] Failed to create shader with type " << shaderType << std::endl;
@@ -98,61 +103,73 @@ GLuint ShaderProg::AddShader(const std::string& sourceText, GLenum shaderType) {
     return shaderObj;
 }
 
-bool ShaderProg::LoadShaderTextFromFile(const std::string filePath, std::string& sourceText) {
+bool ShaderProg::LoadShaderTextFromFile(const std::string filePath, std::string& sourceText)
+{
     std::ifstream sourceFile(filePath.c_str());
-    if (!sourceFile) {
+    if(!sourceFile) {
         std::cerr << "[ERROR] Failed to open shader source file: " << filePath << std::endl;
         return false;
     }
-    sourceText.assign((std::istreambuf_iterator< char >(sourceFile)), std::istreambuf_iterator< char >());
+    sourceText.assign((std::istreambuf_iterator< char >(sourceFile)),  std::istreambuf_iterator< char >());
     return true;
 }
 
 // ------------------------------------------------------------------------------------------------
 
-FillColorShaderProg::FillColorShaderProg() {
+FillColorShaderProg::FillColorShaderProg()
+{
     locFillColor = -1;
 }
 
-FillColorShaderProg::~FillColorShaderProg() {
-}
+FillColorShaderProg::~FillColorShaderProg()
+{}
 
-void FillColorShaderProg::GetUniformVariableLocation() {
+void FillColorShaderProg::GetUniformVariableLocation()
+{
     ShaderProg::GetUniformVariableLocation();
     locFillColor = glGetUniformLocation(shaderProgId, "fillColor");
 }
 
 // ------------------------------------------------------------------------------------------------
-GouraudShadingDemoShaderProg::GouraudShadingDemoShaderProg() {
+PhongShadingDemoShaderProg::PhongShadingDemoShaderProg()
+{
     locM = -1;
-    locV = -1;
     locNM = -1;
+    locCameraPos = -1;
     locKa = -1;
     locKd = -1;
     locKs = -1;
     locNs = -1;
     locAmbientLight = -1;
     locDirLightDir = -1;
-    locDirLightRadiance = -1;
-    locPointLightPos = -1;
-    locPointLightIntensity = -1;
+	locDirLightRadiance = -1;
+	locPointLightPos = -1;
+	locPointLightIntensity = -1;
+    // -------------------------------------------------------
+	// Add your code for initializing the data of spot light.
+	// -------------------------------------------------------
 }
 
-GouraudShadingDemoShaderProg::~GouraudShadingDemoShaderProg() {
-}
+PhongShadingDemoShaderProg::~PhongShadingDemoShaderProg()
+{}
 
-void GouraudShadingDemoShaderProg::GetUniformVariableLocation() {
+void PhongShadingDemoShaderProg::GetUniformVariableLocation()
+{
     ShaderProg::GetUniformVariableLocation();
     locM = glGetUniformLocation(shaderProgId, "worldMatrix");
-    locV = glGetUniformLocation(shaderProgId, "viewMatrix");
     locNM = glGetUniformLocation(shaderProgId, "normalMatrix");
+    locCameraPos = glGetUniformLocation(shaderProgId, "cameraPos");
     locKa = glGetUniformLocation(shaderProgId, "Ka");
     locKd = glGetUniformLocation(shaderProgId, "Kd");
     locKs = glGetUniformLocation(shaderProgId, "Ks");
     locNs = glGetUniformLocation(shaderProgId, "Ns");
     locAmbientLight = glGetUniformLocation(shaderProgId, "ambientLight");
     locDirLightDir = glGetUniformLocation(shaderProgId, "dirLightDir");
-    locDirLightRadiance = glGetUniformLocation(shaderProgId, "dirLightRadiance");
-    locPointLightPos = glGetUniformLocation(shaderProgId, "pointLightPos");
-    locPointLightIntensity = glGetUniformLocation(shaderProgId, "pointLightIntensity");
+	locDirLightRadiance = glGetUniformLocation(shaderProgId, "dirLightRadiance");
+	locPointLightPos = glGetUniformLocation(shaderProgId, "pointLightPos");
+	locPointLightIntensity = glGetUniformLocation(shaderProgId, "pointLightIntensity");
+    // -------------------------------------------------------
+	// Add your code for getting the location of data of spot light.
+	// -------------------------------------------------------
 }
+
