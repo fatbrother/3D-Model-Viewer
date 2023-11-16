@@ -89,13 +89,13 @@ jobs:
     #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
     #   run: ctest --build-config ${{ matrix.build_type }}
     - name: Create release
-      # if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: ncipollo/release-action@v1.10.0
       with:
         artifacts: ${{ steps.strings.outputs.build-output-dir }}
 
     - name: Upload release asset
-      # if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: actions/upload-artifact@v2
       with:
         name: ${{ github.ref }}
