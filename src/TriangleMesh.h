@@ -40,6 +40,7 @@ public:
 		const glm::mat4&, 
 		const glm::mat4&, 
 		const glm::mat4&,
+		const glm::mat4&,
 		const glm::vec3&, 
 		const std::shared_ptr<DirectionalLight>&,
 		const std::shared_ptr<PointLight>&) const;

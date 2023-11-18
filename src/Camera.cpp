@@ -5,9 +5,9 @@
 Camera::Camera(const float aspectRatio)
 {
 	// Default camera pose and parameters.
-	position = glm::vec3(0.0f, 0.0f, 3.0f);
+	position = glm::vec3(0.0f, 1.0f, 5.0f);
 	target = glm::vec3(0.0f, 0.0f, 0.0f);
-	fovy = 45.0f;
+	fovy = 30.0f;
 	nearPlane = 0.1f;
 	farPlane = 1000.0f;
 	UpdateView(position, target, glm::vec3(0.0f, 1.0f, 0.0f));

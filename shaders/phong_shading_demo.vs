@@ -5,6 +5,7 @@ layout (location = 1) in vec3 Normal;
 
 // Transformation matrix.
 uniform mat4 worldMatrix;
+uniform mat4 viewMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 MVP;
 
@@ -35,17 +36,21 @@ out vec3 iAmbientLight;
 
 void main()
 {
-    iPosition = vec3(worldMatrix * vec4(Position, 1.0));
-    iNormal = vec3(normalMatrix * vec4(Normal, 0.0));
+    vec4 tmpPosition = viewMatrix * worldMatrix * vec4(Position, 1.0);
+    iPosition = tmpPosition.xyz / tmpPosition.w;
+    iNormal = normalize(vec3(normalMatrix * vec4(Normal, 0.0)));
 
     iKa = Ka;
     iKd = Kd;
     iKs = Ks;
     iNs = Ns;
-    iDirLightDir = dirLightDir;
+    iDirLightDir = vec3(viewMatrix * vec4(dirLightDir, 0.0));
+    iDirLightDir = normalize(iDirLightDir);
     iDirLightRadiance = dirLightRadiance;
-    iPointLightPos = pointLightPos;
-    iPointLightIntensity = pointLightIntensity;
+    iPointLightPos = vec3(viewMatrix * vec4(pointLightPos, 1.0));
+    vec3 dist = iPointLightPos - iPosition;
+    float distSqr = dot(dist, dist);
+    iPointLightIntensity = pointLightIntensity / distSqr;
     iAmbientLight = ambientLight;
 
     gl_Position = MVP * vec4(Position, 1.0);

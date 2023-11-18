@@ -266,6 +266,7 @@ void TriangleMesh::ReleaseBuffers() {
 void TriangleMesh::Render(
 	const std::unique_ptr<PhongShadingDemoShaderProg>& shader,
 	const glm::mat4& MVP,
+	const glm::mat4& V,
 	const glm::mat4& W,
 	const glm::mat4& NM,
 	const glm::vec3& ambientLight,
@@ -273,10 +274,9 @@ void TriangleMesh::Render(
 	const std::shared_ptr<PointLight>& pointLightObj) const {
 
 	for (auto& subMesh : pImpl->subMeshes) {
-		// Transformation matrix.
 		shader->Bind();
-
 		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(W));
+		glUniformMatrix4fv(shader->GetLocV(), 1, GL_FALSE, glm::value_ptr(V));
 		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(W))));
 		glUniformMatrix4fv(shader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
 		// Material properties.
@@ -302,20 +302,21 @@ void TriangleMesh::Render(
 
 // Desc: Render the submesh.
 void TriangleMesh::RenderSubMesh(const TriangleMesh::SubMesh& subMesh) const {
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	// glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, pImpl->vboId);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, position));
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, normal));
-	// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, texcoord));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, subMesh.iboId);
 
-	glBindBuffer(GL_ARRAY_BUFFER, subMesh.iboId);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, position));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, normal));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, texcoord));
+
 	glDrawElements(GL_TRIANGLES, subMesh.vertexIndices.size(), GL_UNSIGNED_INT, 0);
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
-	// glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(2);
 }
 
 // Desc: Print mesh information.

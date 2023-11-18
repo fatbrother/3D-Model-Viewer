@@ -24,32 +24,32 @@ vec3 Ambient(vec3 Ka, vec3 I)
     return Ka * I;
 }
 
-vec3 Diffuse(vec3 Kd, vec3 I, vec3 N, vec3 L)
+vec3 Diffuse(vec3 Kd, vec3 I, vec3 N, vec3 lightDir)
 {
-    return Kd * I * max(0, dot(N, L));
+    return Kd * I * max(0, dot(N, lightDir));
 }
 
-vec3 Specular(vec3 Ks, vec3 I, vec3 R, vec3 E, float Ns)
+vec3 Specular(vec3 Ks, vec3 I, vec3 lightDir, vec3 N, float shininess)
 {
-    return Ks * I * pow(max(0, dot(R, E)), Ns);
+    vec3 E = normalize(-iPosition);
+    vec3 L = normalize(lightDir);
+    vec3 H = normalize(L + E);
+    return Ks * I * pow(max(0, dot(N, H)), shininess);
 }
 
 void main()
 {
-    vec3 L = normalize(iPointLightPos - iPosition);
-    vec3 E = normalize(-iPosition);
-    vec3 R = 2 * dot(L, iNormal) * iNormal - L;
-
     // Ambient light.
     vec3 ambient = Ambient(iKa, iAmbientLight);
 
     // Directional light.
-    vec3 DirLight = Diffuse(iKd, iDirLightRadiance, iNormal, iDirLightDir);
-    DirLight += Specular(iKs, iDirLightRadiance, R, E, iNs);
+    vec3 dirLight = Diffuse(iKd, iDirLightRadiance, iNormal, iDirLightDir);
+    dirLight += Specular(iKs, iDirLightRadiance, iDirLightDir, iNormal, iNs);
 
     // Point light.
-    vec3 PointLight = Diffuse(iKd, iPointLightIntensity, iNormal, L);
-    PointLight += Specular(iKs, iPointLightIntensity, R, E, iNs);
+    vec3 L = normalize(iPointLightPos - iPosition);
+    vec3 pointLight = Diffuse(iKd, iPointLightIntensity, iNormal, L);
+    pointLight += Specular(iKs, iPointLightIntensity, L, iNormal, iNs);
 
-    FragColor = vec4(ambient + DirLight + PointLight, 1.0);
+    FragColor = vec4(ambient + dirLight + pointLight, 1);
 }

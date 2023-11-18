@@ -157,6 +157,7 @@ void PhongShadingDemoShaderProg::GetUniformVariableLocation()
 {
     ShaderProg::GetUniformVariableLocation();
     locM = glGetUniformLocation(shaderProgId, "worldMatrix");
+    locV = glGetUniformLocation(shaderProgId, "viewMatrix");
     locNM = glGetUniformLocation(shaderProgId, "normalMatrix");
     locCameraPos = glGetUniformLocation(shaderProgId, "cameraPos");
     locKa = glGetUniformLocation(shaderProgId, "Ka");

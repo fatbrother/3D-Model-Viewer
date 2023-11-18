@@ -82,7 +82,7 @@ struct ScreenManager::Impl {
     std::unique_ptr<Camera> camera;
     std::shared_ptr<DirectionalLight> dirLight;
     std::shared_ptr<ScenePointLight> pointLightObj;
-    glm::vec3 ambientLight = glm::vec3(0.6f, 0.6f, 0.6f);
+    glm::vec3 ambientLight;
     float lightMoveSpeed = 0.2f;
 };
 
@@ -96,7 +96,7 @@ void ScreenManager::Start(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(pImpl->width, pImpl->height);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("HW1: OBJ Loader");
+    glutCreateWindow("HW2: Lighting and Shading");
 
     // Initialize GLEW.
     // Must be done after glut is initialized!
@@ -107,13 +107,12 @@ void ScreenManager::Start(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    pImpl->fillColorShader = std::make_unique<FillColorShaderProg>();
-    pImpl->phongShader = std::make_unique<PhongShadingDemoShaderProg>();
-
     // Initialization.
     SetupRenderState();
-    SetupScene(0);
+    SetupLights();
+    SetupCamera();
     SetupShaderLib();
+    SetupScene(0);
 
     // Register callback functions.
     glutCreateMenu(Member2Callback(&ScreenManager::MenuCB));
@@ -174,16 +173,6 @@ ScreenManager::ScreenManager() {
         std::thread thread(threadFunc, i, objBasePath, pImpl->objNames, std::ref(pImpl->meshes));
         thread.detach();
     }
-
-    float fovy = 30.0f;
-    float zNear = 0.1f;
-    float zFar = 1000.0f;
-    glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 5.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    pImpl->camera->UpdateView(cameraPos, cameraTarget, cameraUp);
-    float aspectRatio = (float)pImpl->width / (float)pImpl->height;
-    pImpl->camera->UpdateProjection(fovy, aspectRatio, zNear, zFar);
 }
 
 // Callback function for glutDisplayFunc.
@@ -195,10 +184,12 @@ void ScreenManager::RenderSceneCB() {
     pImpl->sceneObj->worldMatrix = S;
     glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(pImpl->camera->GetViewMatrix() * pImpl->sceneObj->worldMatrix));
     glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * pImpl->camera->GetViewMatrix() * pImpl->sceneObj->worldMatrix;
+    glm::mat4x4 V = pImpl->camera->GetViewMatrix();
 
     pImpl->sceneObj->mesh->Render(
         pImpl->phongShader,
         MVP,
+        V,
         pImpl->sceneObj->worldMatrix,
         normalMatrix,
         pImpl->ambientLight,
@@ -285,25 +276,45 @@ void ScreenManager::SetupScene(int objIndex) {
     }
     pImpl->sceneObj->mesh = pImpl->meshes[objIndex];
     pImpl->sceneObj->mesh->CreateBuffers();
+}
 
-    glm::vec3 dirLightDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+void ScreenManager::SetupLights() {
+    glm::vec3 dirLightDirection = glm::vec3(0.0f, 0.0f, 1.0f);
     glm::vec3 dirLightRadiance = glm::vec3(0.6f, 0.6f, 0.6f);
-    glm::vec3 pointLightPosition = glm::vec3(0.8f, 0.f, 0.8f);
+    glm::vec3 pointLightPosition = glm::vec3(0.8f, 0.0f, 0.8f);
     glm::vec3 pointLightIntensity = glm::vec3(0.5f, 0.1f, 0.1f);
+    glm::vec3 spotLightPosition = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 spotLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+    glm::vec3 spotLightIntensity = glm::vec3(0.5f, 0.5f, 0.1f);
+    float spotLightCutoffStartInDegree = 30.0f;
+    float spotLightTotalWidthInDegree = 45.0f;
     glm::vec3 ambientLight = glm::vec3(0.2f, 0.2f, 0.2f);
     pImpl->dirLight = std::make_unique<DirectionalLight>(dirLightDirection, dirLightRadiance);
     pImpl->pointLightObj->light = std::make_shared<PointLight>(pointLightPosition, pointLightIntensity);
     pImpl->pointLightObj->visColor = glm::normalize((pImpl->pointLightObj->light->GetIntensity()));
 }
 
+void ScreenManager::SetupCamera() {
+    // Create a camera and update view and proj matrices.
+    float fovy = 30.0f;
+    float zNear = 0.1f;
+    float zFar = 1000.0f;
+    glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 5.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    pImpl->camera->UpdateView(cameraPos, cameraTarget, cameraUp);
+    float aspectRatio = (float)pImpl->width / (float)pImpl->height;
+    pImpl->camera->UpdateProjection(fovy, aspectRatio, zNear, zFar);
+}
+
 void ScreenManager::SetupShaderLib() {
     pImpl->fillColorShader = std::make_unique<FillColorShaderProg>();
+    pImpl->phongShader = std::make_unique<PhongShadingDemoShaderProg>();
+
     if (!pImpl->fillColorShader->LoadFromFiles("shaders/fixed_color.vs", "shaders/fixed_color.fs")) {
         std::cerr << "Failed to load fixed_color shader." << std::endl;
         exit(EXIT_FAILURE);
     }
-
-    pImpl->phongShader = std::make_unique<PhongShadingDemoShaderProg>();
     if (!pImpl->phongShader->LoadFromFiles("shaders/phong_shading_demo.vs", "shaders/phong_shading_demo.fs")) {
         std::cerr << "Failed to load gouraud shader." << std::endl;
         exit(EXIT_FAILURE);

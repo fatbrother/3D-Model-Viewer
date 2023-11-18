@@ -2,7 +2,6 @@
 
 // C++ STL headers.
 #include <memory>
-#include <string>
 
 namespace opengl_homework {
 
@@ -36,6 +35,8 @@ private:
     void SetupRenderState();
     void SetupScene(int);
     void SetupShaderLib();
+    void SetupLights();
+    void SetupCamera();
     void ReshapeCB(int, int);
     void ProcessSpecialKeysCB(int, int, int);
     void ProcessKeysCB(unsigned char, int, int);

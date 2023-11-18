@@ -67,6 +67,7 @@ public:
 	~PhongShadingDemoShaderProg();
 
 	GLint GetLocM() const { return locM; }
+	GLint GetLocV() const { return locV; }
 	GLint GetLocNM() const { return locNM; }
 	GLint GetLocCameraPos() const { return locCameraPos; }
 	GLint GetLocKa() const { return locKa; }
@@ -90,6 +91,7 @@ private:
 	// PhongShadingDemoShaderProg Public Data.
 	// Transformation matrix.
 	GLint locM;
+	GLint locV;
 	GLint locNM;
 	GLint locCameraPos;
 	// Material properties.
