@@ -271,7 +271,9 @@ void TriangleMesh::Render(
 	const glm::mat4& NM,
 	const glm::vec3& ambientLight,
 	const std::shared_ptr<DirectionalLight>& dirLight,
-	const std::shared_ptr<PointLight>& pointLightObj) const {
+	const std::shared_ptr<PointLight>& pointLight, 
+	const std::shared_ptr<SpotLight>& spotLight
+	) const {
 
 	for (auto& subMesh : pImpl->subMeshes) {
 		shader->Bind();
@@ -289,10 +291,18 @@ void TriangleMesh::Render(
 			glUniform3fv(shader->GetLocDirLightDir(), 1, glm::value_ptr(dirLight->GetDirection()));
 			glUniform3fv(shader->GetLocDirLightRadiance(), 1, glm::value_ptr(dirLight->GetRadiance()));
 		}
-		if (pointLightObj != nullptr) {
-			glUniform3fv(shader->GetLocPointLightPos(), 1, glm::value_ptr(pointLightObj->GetPosition()));
-			glUniform3fv(shader->GetLocPointLightIntensity(), 1, glm::value_ptr(pointLightObj->GetIntensity()));
+		if (pointLight != nullptr) {
+			glUniform3fv(shader->GetLocPointLightPos(), 1, glm::value_ptr(pointLight->GetPosition()));
+			glUniform3fv(shader->GetLocPointLightIntensity(), 1, glm::value_ptr(pointLight->GetIntensity()));
 		}
+		if (spotLight != nullptr) {
+			glUniform3fv(shader->GetLocSpotLightPos(), 1, glm::value_ptr(spotLight->GetPosition()));
+			glUniform3fv(shader->GetLocSpotLightDir(), 1, glm::value_ptr(spotLight->GetDirection()));
+			glUniform3fv(shader->GetLocSpotLightIntensity(), 1, glm::value_ptr(spotLight->GetIntensity()));
+			glUniform1f(shader->GetLocSpotLightCutoff(), spotLight->GetCutoffDeg());
+			glUniform1f(shader->GetLocSpotLightTotalWidth(), spotLight->GetTotalWidthDeg());
+		}
+
 		glUniform3fv(shader->GetLocAmbientLight(), 1, glm::value_ptr(ambientLight));
 
 		RenderSubMesh(subMesh);

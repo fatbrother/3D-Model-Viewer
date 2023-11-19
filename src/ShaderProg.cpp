@@ -145,9 +145,11 @@ PhongShadingDemoShaderProg::PhongShadingDemoShaderProg()
 	locDirLightRadiance = -1;
 	locPointLightPos = -1;
 	locPointLightIntensity = -1;
-    // -------------------------------------------------------
-	// Add your code for initializing the data of spot light.
-	// -------------------------------------------------------
+    locSpotLightPos = -1;
+    locSpotLightDir = -1;
+    locSpotLightIntensity = -1;
+    locSpotLightCutoff = -1;
+    locSpotLightTotalWidth = -1;
 }
 
 PhongShadingDemoShaderProg::~PhongShadingDemoShaderProg()
@@ -164,13 +166,15 @@ void PhongShadingDemoShaderProg::GetUniformVariableLocation()
     locKd = glGetUniformLocation(shaderProgId, "Kd");
     locKs = glGetUniformLocation(shaderProgId, "Ks");
     locNs = glGetUniformLocation(shaderProgId, "Ns");
-    locAmbientLight = glGetUniformLocation(shaderProgId, "ambientLight");
     locDirLightDir = glGetUniformLocation(shaderProgId, "dirLightDir");
 	locDirLightRadiance = glGetUniformLocation(shaderProgId, "dirLightRadiance");
 	locPointLightPos = glGetUniformLocation(shaderProgId, "pointLightPos");
 	locPointLightIntensity = glGetUniformLocation(shaderProgId, "pointLightIntensity");
-    // -------------------------------------------------------
-	// Add your code for getting the location of data of spot light.
-	// -------------------------------------------------------
+    locSpotLightPos = glGetUniformLocation(shaderProgId, "spotLightPos");
+    locSpotLightDir = glGetUniformLocation(shaderProgId, "spotLightDir");
+    locSpotLightIntensity = glGetUniformLocation(shaderProgId, "spotLightIntensity");
+    locSpotLightCutoff = glGetUniformLocation(shaderProgId, "spotLightCutoff");
+    locSpotLightTotalWidth = glGetUniformLocation(shaderProgId, "spotLightTotalWidth");
+    locAmbientLight = glGetUniformLocation(shaderProgId, "ambientLight");
 }
 

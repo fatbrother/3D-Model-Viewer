@@ -79,9 +79,11 @@ public:
 	GLint GetLocDirLightRadiance() const { return locDirLightRadiance; }
 	GLint GetLocPointLightPos() const { return locPointLightPos; }
 	GLint GetLocPointLightIntensity() const { return locPointLightIntensity; }
-	// -------------------------------------------------------
-	// Add your methods for spot light.
-	// -------------------------------------------------------
+	GLint GetLocSpotLightPos() const { return locSpotLightPos; }
+	GLint GetLocSpotLightDir() const { return locSpotLightDir; }
+	GLint GetLocSpotLightIntensity() const { return locSpotLightIntensity; }
+	GLint GetLocSpotLightCutoff() const { return locSpotLightCutoff; }
+	GLint GetLocSpotLightTotalWidth() const { return locSpotLightTotalWidth; }
 
 protected:
 	// PhongShadingDemoShaderProg Protected Methods.
@@ -105,7 +107,9 @@ private:
 	GLint locDirLightRadiance;
 	GLint locPointLightPos;
 	GLint locPointLightIntensity;
-	// -------------------------------------------------------
-	// Add your data for spot light.
-	// -------------------------------------------------------
+	GLint locSpotLightPos;
+	GLint locSpotLightDir;
+	GLint locSpotLightIntensity;
+	GLint locSpotLightCutoff;
+	GLint locSpotLightTotalWidth;
 };

@@ -46,15 +46,18 @@ struct SceneObject
     glm::mat4x4 worldMatrix;
 };
 
-// ScenePointLight (for visualization of a point light).
-struct ScenePointLight
+// SceneLight (for visualization of a point light).
+// T is derived from PointLight
+template<typename T, 
+    typename = std::enable_if<std::is_base_of<PointLight, T>::value>>
+struct SceneLight
 {
-    ScenePointLight() {
+    SceneLight() {
         light = nullptr;
         worldMatrix = glm::mat4x4(1.0f);
         visColor = glm::vec3(1.0f, 1.0f, 1.0f);
     }
-    std::shared_ptr<PointLight> light;
+    std::shared_ptr<T> light;
     glm::mat4x4 worldMatrix;
     glm::vec3 visColor;
 };
@@ -68,7 +71,8 @@ struct ScreenManager::Impl {
         height(600),
         camera(std::make_unique<Camera>((float)width / (float)height)) {
         sceneObj = std::make_unique<SceneObject>();
-        pointLightObj = std::make_unique<ScenePointLight>();
+        pointLightObj = std::make_unique<SceneLight<PointLight>>();
+        spotLightObj = std::make_unique<SceneLight<SpotLight>>();
     };
 
     int width;
@@ -81,7 +85,8 @@ struct ScreenManager::Impl {
     std::unique_ptr<SceneObject> sceneObj;
     std::unique_ptr<Camera> camera;
     std::shared_ptr<DirectionalLight> dirLight;
-    std::shared_ptr<ScenePointLight> pointLightObj;
+    std::shared_ptr<SceneLight<PointLight>> pointLightObj;
+    std::shared_ptr<SceneLight<SpotLight>> spotLightObj;
     glm::vec3 ambientLight;
     float lightMoveSpeed = 0.2f;
 };
@@ -194,7 +199,8 @@ void ScreenManager::RenderSceneCB() {
         normalMatrix,
         pImpl->ambientLight,
         pImpl->dirLight,
-        pImpl->pointLightObj->light);
+        pImpl->pointLightObj->light,
+        pImpl->spotLightObj->light);
 
     // Visualize the light with fill color. ------------------------------------------------------
     // Bind shader and set parameters.
@@ -211,6 +217,22 @@ void ScreenManager::RenderSceneCB() {
 
         // Render the point light.
         pImpl->pointLightObj->light->Draw();
+
+        pImpl->fillColorShader->Unbind();
+    }
+    auto spotLight = pImpl->spotLightObj->light;
+    if (spotLight != nullptr) {
+        glm::mat4x4 T = glm::translate(glm::mat4x4(1.0f), (spotLight->GetPosition()));
+        pImpl->spotLightObj->worldMatrix = T;
+        glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * pImpl->camera->GetViewMatrix() * pImpl->spotLightObj->worldMatrix;
+
+        pImpl->fillColorShader->Bind();
+
+        glUniformMatrix4fv(pImpl->fillColorShader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
+        glUniform3fv(pImpl->fillColorShader->GetLocFillColor(), 1, glm::value_ptr(pImpl->spotLightObj->visColor));
+
+        // Render the point light.
+        pImpl->spotLightObj->light->Draw();
 
         pImpl->fillColorShader->Unbind();
     }
@@ -254,6 +276,19 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
     if (key == 27) {
         exit(0);
     }
+
+    // Spot light control.
+    auto spotLight = pImpl->spotLightObj->light;
+    if (spotLight != nullptr) {
+        if (key == 'a')
+            spotLight->MoveLeft(pImpl->lightMoveSpeed);
+        if (key == 'd')
+            spotLight->MoveRight(pImpl->lightMoveSpeed);
+        if (key == 'w')
+            spotLight->MoveUp(pImpl->lightMoveSpeed);
+        if (key == 's')
+            spotLight->MoveDown(pImpl->lightMoveSpeed);
+    }
 }
 
 void ScreenManager::SetupRenderState() {
@@ -292,6 +327,14 @@ void ScreenManager::SetupLights() {
     pImpl->dirLight = std::make_unique<DirectionalLight>(dirLightDirection, dirLightRadiance);
     pImpl->pointLightObj->light = std::make_shared<PointLight>(pointLightPosition, pointLightIntensity);
     pImpl->pointLightObj->visColor = glm::normalize((pImpl->pointLightObj->light->GetIntensity()));
+    pImpl->spotLightObj->light = std::make_shared<SpotLight>(
+        spotLightPosition,
+        spotLightIntensity,
+        spotLightDirection,
+        spotLightCutoffStartInDegree,
+        spotLightTotalWidthInDegree);
+    pImpl->spotLightObj->visColor = glm::normalize((pImpl->spotLightObj->light->GetIntensity()));
+    pImpl->ambientLight = ambientLight;
 }
 
 void ScreenManager::SetupCamera() {

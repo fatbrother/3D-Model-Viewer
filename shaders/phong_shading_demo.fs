@@ -15,6 +15,8 @@ in vec3 iDirLightDir;
 in vec3 iDirLightRadiance;
 in vec3 iPointLightPos;
 in vec3 iPointLightIntensity;
+in vec3 iSpotLightPos;
+in vec3 iSpotLightIntensity;
 in vec3 iAmbientLight;
 
 out vec4 FragColor;
@@ -51,5 +53,10 @@ void main()
     vec3 pointLight = Diffuse(iKd, iPointLightIntensity, iNormal, L);
     pointLight += Specular(iKs, iPointLightIntensity, L, iNormal, iNs);
 
-    FragColor = vec4(ambient + dirLight + pointLight, 1);
+    // Spot light.
+    vec3 S = normalize(iSpotLightPos - iPosition);
+    vec3 spotLight = Diffuse(iKd, iSpotLightIntensity, iNormal, S);
+    spotLight += Specular(iKs, iSpotLightIntensity, S, iNormal, iNs);
+
+    FragColor = vec4(ambient + dirLight + pointLight + spotLight, 1);
 }

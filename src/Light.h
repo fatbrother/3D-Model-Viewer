@@ -45,8 +45,8 @@ public:
 	void MoveUp   (const float moveSpeed) { position += moveSpeed * glm::vec3( 0.0f,  0.1f, 0.0f); }
 	void MoveDown (const float moveSpeed) { position += moveSpeed * glm::vec3( 0.0f, -0.1f, 0.0f); }
 
-private:
-	// PointLight Private Methods.
+protected:
+	// PointLight Protect Methods.
 	void CreateVisGeometry() {
 		VertexP lightVtx = glm::vec3(0, 0, 0);
 		const int numVertex = 1;
@@ -55,12 +55,45 @@ private:
 		glBufferData(GL_ARRAY_BUFFER, sizeof(VertexP) * numVertex, &lightVtx, GL_STATIC_DRAW);
 	}
 
-	// PointLight Private Data.
+	// PointLight Protect Data.
 	GLuint vboId;
 	glm::vec3 position;
 	glm::vec3 intensity;
 };
 
+// SpotLight Declarations.
+class SpotLight : public PointLight
+{
+public:
+	// SpotLight Public Methods.
+	SpotLight() {
+		position = glm::vec3(0.0f, 2.0f, 0.0f);
+		intensity = glm::vec3(1.0f, 1.0f, 1.0f);
+		direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));	// Default direction: coming from upward.
+		cutoffDeg = 30.0f;											// Default cutoff angle: 30 degrees.
+		totalWidthDeg = 60.0f;										// Default total width angle: 60 degrees.
+		CreateVisGeometry();
+	}
+	
+	SpotLight(const glm::vec3 p, const glm::vec3 I, const glm::vec3 D, const float cutoffDeg, const float totalWidthDeg) {
+		position = p;
+		intensity = I;
+		direction = D;
+		this->cutoffDeg = cutoffDeg;
+		this->totalWidthDeg = totalWidthDeg;
+		CreateVisGeometry();
+	}
+
+	glm::vec3 GetDirection() const { return direction; }
+	float GetCutoffDeg() const { return cutoffDeg; }
+	float GetTotalWidthDeg() const { return totalWidthDeg; }
+
+private:
+	// SpotLight Private Data.
+	glm::vec3 direction;
+	float cutoffDeg;
+	float totalWidthDeg;
+};
 
 // DirectionalLight Declarations.
 class DirectionalLight
