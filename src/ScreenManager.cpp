@@ -250,7 +250,14 @@ void ScreenManager::RenderSceneCB() {
 // Callback function for glutReshapeFunc.
 void ScreenManager::ReshapeCB(int w, int h) {
     // Adjust camera and projection here.
-    // Implemented in HW2.
+
+    // Update viewport.
+    pImpl->width = w;
+    pImpl->height = h;
+    glViewport(0, 0, pImpl->width, pImpl->height);
+    // Adjust camera and projection.
+    pImpl->camera->UpdateAspectRatio((float)pImpl->width / (float)pImpl->height);
+    pImpl->camera->UpdateProjection();
 }
 
 void ScreenManager::ProcessSpecialKeysCB(int key, int x, int y) {
@@ -355,8 +362,11 @@ void ScreenManager::SetupCamera() {
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     pImpl->camera->UpdateView(cameraPos, cameraTarget, cameraUp);
-    float aspectRatio = (float)pImpl->width / (float)pImpl->height;
-    pImpl->camera->UpdateProjection(fovy, aspectRatio, zNear, zFar);
+    pImpl->camera->UpdateAspectRatio((float)pImpl->width / (float)pImpl->height);
+    pImpl->camera->UpdateFovy(fovy);
+    pImpl->camera->UpdateNearPlane(zNear);
+    pImpl->camera->UpdateFarPlane(zFar);
+    pImpl->camera->UpdateProjection();
 }
 
 void ScreenManager::SetupShaderLib() {

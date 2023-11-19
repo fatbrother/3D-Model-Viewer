@@ -13,13 +13,17 @@ public:
 	glm::mat4x4& GetProjMatrix() { return projMatrix; }
 
 	void UpdateView(const glm::vec3 newPos, const glm::vec3 newTarget, const glm::vec3 up);
-	void UpdateProjection(const float fovyInDegree, const float aspectRatio, const float zNear, const float zFar);
+	void UpdateAspectRatio(const float aspectRatio);
+	void UpdateFovy(const float fovyInDegree);
+	void UpdateNearPlane(const float zNear);
+	void UpdateFarPlane(const float zFar);
+	void UpdateProjection();
 
 private:
 	// Camera Private Data.
 	glm::vec3 position;
 	glm::vec3 target;
-	
+
 	float fovy;	// in degree.
 	float aspectRatio;
 	float nearPlane;
