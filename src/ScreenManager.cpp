@@ -36,12 +36,18 @@ auto ScreenManager::Member2Callback(void(ScreenManager::* func)(Args...)) {
     return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
 }
 
-struct SceneObject
+class SceneObject
 {
+public:
     SceneObject() {
         mesh = nullptr;
         worldMatrix = glm::mat4x4(1.0f);
     }
+
+    void Update(const glm::mat4& transform) {
+        worldMatrix = transform * worldMatrix;
+    }
+
     MeshPtr mesh;
     glm::mat4x4 worldMatrix;
 };
@@ -184,12 +190,13 @@ ScreenManager::ScreenManager() {
 void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Update transform (assuming there might be dynamic transformations).
-    glm::mat4x4 S = glm::scale(glm::mat4x4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
-    pImpl->sceneObj->worldMatrix = S;
-    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(pImpl->camera->GetViewMatrix() * pImpl->sceneObj->worldMatrix));
-    glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * pImpl->camera->GetViewMatrix() * pImpl->sceneObj->worldMatrix;
+    // Rotate the model.
+    glm::mat4x4 R = glm::rotate(glm::mat4x4(1.0f), 0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+    pImpl->sceneObj->Update(R);
+
     glm::mat4x4 V = pImpl->camera->GetViewMatrix();
+    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(pImpl->sceneObj->worldMatrix));
+    glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * V * pImpl->sceneObj->worldMatrix;
 
     pImpl->sceneObj->mesh->Render(
         pImpl->phongShader,
@@ -306,6 +313,8 @@ void ScreenManager::SetupRenderState() {
 // Load a model from obj file and apply transformation.
 // You can alter the parameters for dynamically loading a model.
 void ScreenManager::SetupScene(int objIndex) {
+    glm::mat4x4 S = glm::scale(glm::mat4x4(1.0f), glm::vec3(1.5f, 1.5f, 1.5f));
+    pImpl->sceneObj->worldMatrix = S;
     if (pImpl->sceneObj->mesh != nullptr) {
         pImpl->sceneObj->mesh->ReleaseBuffers();
     }

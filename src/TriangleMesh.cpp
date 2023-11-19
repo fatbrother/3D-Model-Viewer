@@ -267,7 +267,7 @@ void TriangleMesh::Render(
 	const std::unique_ptr<PhongShadingDemoShaderProg>& shader,
 	const glm::mat4& MVP,
 	const glm::mat4& V,
-	const glm::mat4& W,
+	const glm::mat4& M,
 	const glm::mat4& NM,
 	const glm::vec3& ambientLight,
 	const std::shared_ptr<DirectionalLight>& dirLight,
@@ -277,9 +277,9 @@ void TriangleMesh::Render(
 
 	for (auto& subMesh : pImpl->subMeshes) {
 		shader->Bind();
-		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(W));
+		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(M));
 		glUniformMatrix4fv(shader->GetLocV(), 1, GL_FALSE, glm::value_ptr(V));
-		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(W))));
+		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(M))));
 		glUniformMatrix4fv(shader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
 		// Material properties.
 		glUniform3fv(shader->GetLocKa(), 1, glm::value_ptr(subMesh.material->GetKa()));

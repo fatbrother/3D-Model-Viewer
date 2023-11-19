@@ -69,13 +69,13 @@ void main()
     float spotLightDistSqr = dot(spotLightDist, spotLightDist);
     float deltaDeg = degrees(acos(dot(normalize(spotLightDist), -normalize(VSpotLightDir))));
     float factor = 0.0;
-    if (deltaDeg < spotLightCutoff / 2)
+    if (deltaDeg < spotLightCutoff)
     {
         factor = 1.0;
     }
-    else if (deltaDeg < spotLightTotalWidth / 2)
+    else if (deltaDeg < spotLightTotalWidth)
     {
-        factor = (deltaDeg - spotLightTotalWidth / 2) / (spotLightCutoff / 2 - spotLightTotalWidth / 2);
+        factor = (deltaDeg - spotLightTotalWidth) / (spotLightCutoff - spotLightTotalWidth);
     }
     iSpotLightIntensity = spotLightIntensity * factor / spotLightDistSqr;
 
