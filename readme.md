@@ -1,5 +1,7 @@
 # OpenGL HW
 
+![Bunny](./images/HW2/bunny.png)
+
 - [OpenGL HW](#opengl-hw)
   - [0. Introduction](#0-introduction)
   - [1. Environment](#1-environment)
@@ -8,23 +10,7 @@
   - [2. Build \& Run](#2-build--run)
     - [2.1. Run on Linux](#21-run-on-linux)
     - [2.2. Run on Windows](#22-run-on-windows)
-  - [3. Result](#3-result)
-    - [3.1. Bunny](#31-bunny)
-    - [3.2. ColorCube](#32-colorcube)
-    - [3.3. Forklift](#33-forklift)
-    - [3.4. Koffing](#34-koffing)
-    - [3.5. Gengar](#35-gengar)
-    - [3.6. Teapot](#36-teapot)
   - [4. Details](#4-details)
-    - [4.1. Smart pointer](#41-smart-pointer)
-    - [4.2. C++17 filesystem::path](#42-c17-filesystempath)
-    - [4.3. Pragma once](#43-pragma-once)
-    - [4.4. Namespace](#44-namespace)
-    - [4.5. Select model menu](#45-select-model-menu)
-    - [4.6. Encapsulate glut functions](#46-encapsulate-glut-functions)
-    - [4.7. Template wrap function](#47-template-wrap-function)
-    - [4.8. Load model](#48-load-model)
-    - [4.9. Private implementation](#49-private-implementation)
   - [5. Project structure](#5-project-structure)
   - [6. Commit message](#6-commit-message)
 
@@ -32,11 +18,14 @@
 
 This is a homework of CG2023 Computer Graphics course in NTPU, Taiwan.
 
-In this homework, professor ask us to use Glew, Freeglut, and GLM to implement a simple OpenGL program.
+In this project, I implemented a simple 3D model viewer with OpenGL.
 
-The default code given by the professor is write with a more C-style way, and I try to encapsulate it more object-oriented.
+The project includes:
 
-There some modern C++ features I use in this homework, such as smart pointer, filesystem::path, pragma once, namespace, template wrap function, and so on.
+* Object loading
+* Camera control
+* Light control
+* Shader implementation
 
 ## 1. Environment
 
@@ -85,211 +74,48 @@ vcpkg/bootstrap-vcpkg.bat
 ./build/bin/Release/CG2023_HW.exe
 ```
 
-## 3. Result
-
-### 3.1. Bunny
-
-![Bunny](./images/bunny.png)
-
-### 3.2. ColorCube
-
-![Cube](./images/cube.png)
-
-### 3.3. Forklift
-
-![Forklift](./images/forklift.png)
-
-### 3.4. Koffing
-
-![Koffing](./images/koffing.png)
-
-### 3.5. Gengar
-
-![Gengar](./images/gengar.png)
-
-### 3.6. Teapot
-
-![Teapot](./images/teapot.png)
-
 ## 4. Details
 
-### 4.1. Smart pointer
-
-Use smart pointer to avoid memory leak.
-
-```diff
-- TriangleMesh* mesh = nullptr;
-+ std::unique_ptr<TriangleMesh> mesh = nullptr;
-```
-
-```diff
-- mesh = new TriangleMesh();
-+ mesh = std::make_unique<TriangleMesh>();
-```
-
-### 4.2. C++17 filesystem::path
-
-Use c++17 filesystem::path to avoid hard code path.
-
-```diff
-- std::string path = "../models/Bunny.obj";
-+ auto modelPath = std::filesystem::path("../models/Bunny.obj");
-```
-
-### 4.3. Pragma once
-
-Use pragma once to avoid multiple include.
-
-```diff
-- #ifndef TRIANGLEMESH_H
-- #define TRIANGLEMESH_H
-+ #pragma once
-```
-
-### 4.4. Namespace
-
-Use namespace to avoid name conflict.
-
-```diff
-+ namespace opengl_homework {
-```
-
-### 4.5. Select model menu
-
-Add menu to select model dynamically.
-
-```diff
-+ void ScreenManager::SetupMenu()
-+ {
-+     // Create the main menu.
-+     glutCreateMenu(MenuCBWrapper);
-+     
-+     for (int i = 0; i < m_objNames.size(); i++) 
-+         glutAddMenuEntry(m_objNames[i].c_str(), i + 1);
-+     glutAttachMenu(GLUT_RIGHT_BUTTON);
-+ }
-```
-
-![Menu](images/menu.png)
-
-### 4.6. Encapsulate glut functions
-
-Encapsulate the code of glut functions to ScreenManager class.
-
-```diff
-+ class ScreenManager {
-```
-
-### 4.7. Template wrap function
-
-Use template to wrap member function to glut callback function.
-
-```diff
-+ template<typename... Args>
-+ static auto StaticWrapper(void(ScreenManager::*func)(Args...)) {
-+     static void(ScreenManager::*s_func)(Args...) = func;
-+     return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
-+ }
-```
-
-### 4.8. Load model
-
-Preprocess the model file and store with vector.
-
-`Maybe it's not a good idea to store all models in memory if there are too many models, but it's ok for this homework because the total size of all models is only 100k vertices.`
-
-```diff
-+ using MeshPtr = std::shared_ptr<opengl_homework::TriangleMesh>;
-+ std::vector<MeshPtr> m_meshes;
-+ MeshPtr m_currentMesh;
-```
-
-Use thread to load model asynchronously.
-
-```diff
-+ // find the minimum bytes size of the obj files and swap it to the first position
-+ int min = INT_MAX;
-+ int minIndex = 0;
-+ for (int i = 0; i < m_objNames.size(); i++) {
-+     auto size = std::filesystem::file_size("models/" + m_objNames[i] + ".obj");
-+     if (size < min) {
-+         min = size;
-+         minIndex = i;
-+     }
-+ }
-+ std::swap(m_objNames[0], m_objNames[minIndex]);
-+ 
-+ // Load all obj files.
-+ auto basePath = std::filesystem::path("models");
-+ m_meshes.resize(m_objNames.size());
-+ 
-+ // Load first model in the main thread.
-+ auto firstFilePath = basePath / (m_objNames[0] + ".obj");
-+ m_meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
-+ m_meshes[0]->ApplyTransformCPU(MVP);
-+ 
-+ auto threadFunc = [](
-+     int i,
-+     const std::filesystem::path& basePath,
-+     const std::vector<std::string>& m_objNames,
-+     const glm::mat4x4& MVP,
-+     std::vector<MeshPtr>& m_meshes) {
-+         auto filePath = basePath / (m_objNames[i] + ".obj");
-+         m_meshes[i] = std::make_shared<TriangleMesh>(filePath, true);
-+         m_meshes[i]->ApplyTransformCPU(MVP);
-+     };
-+ for (int i = 1; i < m_objNames.size(); i++) {
-+     std::thread thread(threadFunc, i, basePath, m_objNames, MVP, std::ref(m_meshes));
-+     thread.detach();
-+ }
-```
-
-### 4.9. Private implementation
-
-Use pimpl idiom to hide implementation details.
-
-It's also have the benefit of reducing compile time, because the header file doesn't need to include all the implementation details.
-
-```diff
-+ struct Impl;
-+ std::unique_ptr<Impl> pImpl;
-```
+See the [CHANGELOG](./CHANGELOG) and [DETAILS](./details.md) for more implementation details.
 
 ## 5. Project structure
 
 ```text
 .
+├── CHANGELOG
 ├── CMakeLists.txt
 ├── LICENSE
 ├── build
-│   ├── CMakeCache.txt
-│   ├── CMakeFiles
-│   ├── Makefile
-│   ├── bin
-│   │   └── CG2023_HW
-│   └── cmake_install.cmake
 ├── build.bat
 ├── build.sh
 ├── images
-│   ├── bunny.png
-│   ├── cube.png
-│   ├── forklift.png
-│   ├── gengar.png
-│   ├── koffing.png
-│   ├── menu.png
-│   └── teapot.png
 ├── models
-│   ├── Bunny.obj
-│   ├── Cube.obj
-│   ├── Forklift.obj
-│   ├── Gengar.obj
-│   ├── Koffing.obj
-│   └── Teapot.obj
+│   ├── Bunny
+│   ├── ColorCube
+│   ├── Forklift
+│   ├── Gengar
+│   ├── Ivysaur
+│   ├── Koffing
+│   ├── Pillows
+│   ├── Rose
+│   └── Soccer
 ├── readme.md
+├── shaders
+│   ├── face_culling.gs
+│   ├── fixed_color.fs
+│   ├── fixed_color.vs
+│   ├── phong_shading_demo.fs
+│   └── phong_shading_demo.vs
 ├── src
 │   ├── CG2023_HW.cpp
+│   ├── Camera.cpp
+│   ├── Camera.h
+│   ├── Light.h
+│   ├── Material.h
 │   ├── ScreenManager.cpp
 │   ├── ScreenManager.h
+│   ├── ShaderProg.cpp
+│   ├── ShaderProg.h
 │   ├── TriangleMesh.cpp
 │   └── TriangleMesh.h
 └── vcpkg
