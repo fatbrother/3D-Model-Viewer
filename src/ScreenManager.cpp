@@ -373,11 +373,11 @@ void ScreenManager::SetupShaderLib() {
     pImpl->fillColorShader = std::make_unique<FillColorShaderProg>();
     pImpl->phongShader = std::make_unique<PhongShadingDemoShaderProg>();
 
-    if (!pImpl->fillColorShader->LoadFromFiles("shaders/fixed_color.vs", "shaders/fixed_color.fs")) {
+    if (!pImpl->fillColorShader->LoadFromFiles("shaders/fixed_color.vs", "shaders/fixed_color.fs", "")) {
         std::cerr << "Failed to load fixed_color shader." << std::endl;
         exit(EXIT_FAILURE);
     }
-    if (!pImpl->phongShader->LoadFromFiles("shaders/phong_shading_demo.vs", "shaders/phong_shading_demo.fs")) {
+    if (!pImpl->phongShader->LoadFromFiles("shaders/phong_shading_demo.vs", "shaders/phong_shading_demo.fs", "shaders/face_culling.gs")) {
         std::cerr << "Failed to load gouraud shader." << std::endl;
         exit(EXIT_FAILURE);
     }

@@ -13,7 +13,7 @@ public:
 	ShaderProg();
 	~ShaderProg();
 
-	bool LoadFromFiles(const std::string vsFilePath, const std::string fsFilePath);
+	bool LoadFromFiles(const std::string, const std::string, const std::string);
 	void Bind() { glUseProgram(shaderProgId); };
 	void Unbind() { glUseProgram(0); };
 

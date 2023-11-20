@@ -27,47 +27,48 @@ uniform float spotLightTotalWidth;
 uniform vec3 ambientLight;
 
 // Data pass to fragment shader.
-out vec3 iPosition;
-out vec3 iNormal;
-out vec3 iKa;
-out vec3 iKd;
-out vec3 iKs;
-out float iNs;
-out vec3 iDirLightDir;
-out vec3 iDirLightRadiance;
-out vec3 iPointLightPos;
-out vec3 iPointLightIntensity;
-out vec3 iSpotLightPos;
-out vec3 iSpotLightIntensity;
-out vec3 iAmbientLight;
+out vec3 vPosition;
+out vec3 vNormal;
+out vec3 vColor;
+
+vec3 Ambient(vec3 Ka, vec3 I)
+{
+    return Ka * I;
+}
+
+vec3 Diffuse(vec3 Kd, vec3 I, vec3 N, vec3 lightDir)
+{
+    return Kd * I * max(0, dot(N, lightDir));
+}
+
+vec3 Specular(vec3 Ks, vec3 I, vec3 L, vec3 N, vec3 P, float shininess)
+{
+    vec3 E = normalize(-P);
+    vec3 H = normalize(L + E);
+    return Ks * I * pow(max(0, dot(N, H)), shininess);
+}
 
 void main()
 {
     gl_Position = MVP * vec4(Position, 1.0);
 
-    iPosition = vec3(viewMatrix * worldMatrix * vec4(Position, 1.0));
-    iNormal = normalize(vec3(normalMatrix * vec4(Normal, 0.0)));
+    vPosition = vec3(viewMatrix * worldMatrix * vec4(Position, 1.0));
+    vNormal = normalize(vec3(normalMatrix * vec4(Normal, 0.0)));
+  
+    vec3 vDirLightDir = vec3(viewMatrix * vec4(dirLightDir, 0.0));
+    vDirLightDir = normalize(vDirLightDir);
 
-    iKa = Ka;
-    iKd = Kd;
-    iKs = Ks;
-    iNs = Ns;
-
-    iDirLightDir = vec3(viewMatrix * vec4(dirLightDir, 0.0));
-    iDirLightDir = normalize(iDirLightDir);
-    iDirLightRadiance = dirLightRadiance;
-
-    iPointLightPos = vec3(viewMatrix * vec4(pointLightPos, 1.0));
-    vec3 pointLightDist = iPointLightPos - iPosition;
+    vec3 vPointLightPos = vec3(viewMatrix * vec4(pointLightPos, 1.0));
+    vec3 pointLightDist = vPointLightPos - vPosition;
     float pointLightDistSqr = dot(pointLightDist, pointLightDist);
-    iPointLightIntensity = pointLightIntensity / pointLightDistSqr;
+    vec3 vPointLightIntensity = pointLightIntensity / pointLightDistSqr;
 
-    iSpotLightPos = vec3(viewMatrix * vec4(spotLightPos, 1.0));
-    vec3 VSpotLightDir = vec3(viewMatrix * vec4(spotLightDir, 0.0));
-    VSpotLightDir = normalize(VSpotLightDir);
-    vec3 spotLightDist = iSpotLightPos - iPosition;
+    vec3 vSpotLightPos = vec3(viewMatrix * vec4(spotLightPos, 1.0));
+    vec3 vSpotLightDir = vec3(viewMatrix * vec4(spotLightDir, 0.0));
+    vSpotLightDir = normalize(vSpotLightDir);
+    vec3 spotLightDist = vSpotLightPos - vPosition;
     float spotLightDistSqr = dot(spotLightDist, spotLightDist);
-    float deltaDeg = degrees(acos(dot(normalize(spotLightDist), -normalize(VSpotLightDir))));
+    float deltaDeg = degrees(acos(dot(normalize(spotLightDist), -normalize(vSpotLightDir))));
     float factor = 0.0;
     if (deltaDeg < spotLightCutoff)
     {
@@ -77,7 +78,24 @@ void main()
     {
         factor = (deltaDeg - spotLightTotalWidth) / (spotLightCutoff - spotLightTotalWidth);
     }
-    iSpotLightIntensity = spotLightIntensity * factor / spotLightDistSqr;
+    vec3 vSpotLightIntensity = spotLightIntensity * factor / spotLightDistSqr;
 
-    iAmbientLight = ambientLight;
+    // Ambient light.
+    vec3 ambient = Ambient(Ka, ambientLight);
+
+    // Directional light.
+    vec3 dirLight = Diffuse(Kd, dirLightRadiance, vNormal, vDirLightDir);
+    dirLight += Specular(Ks, dirLightRadiance, vDirLightDir, vNormal, vPosition, Ns);
+
+    // Point light.
+    vec3 L = normalize(vPointLightPos - vPosition);
+    vec3 pointLight = Diffuse(Kd, vPointLightIntensity, vNormal, L);
+    pointLight += Specular(Ks, vPointLightIntensity, L, vNormal, vPosition, Ns);
+
+    // Spot light.
+    vec3 S = normalize(vSpotLightPos - vPosition);
+    vec3 spotLight = Diffuse(Kd, vSpotLightIntensity, vNormal, S);
+    spotLight += Specular(Ks, vSpotLightIntensity, S, vNormal, vPosition, Ns);
+
+    vColor = ambient + dirLight + pointLight + spotLight;
 }
