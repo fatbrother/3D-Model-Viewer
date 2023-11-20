@@ -54,9 +54,9 @@ public:
 
 // SceneLight (for visualization of a point light).
 // T is derived from PointLight
-template<typename T, 
+template<typename T,
     typename = std::enable_if<std::is_base_of<PointLight, T>::value>>
-struct SceneLight
+    struct SceneLight
 {
     SceneLight() {
         light = nullptr;
@@ -190,8 +190,16 @@ ScreenManager::ScreenManager() {
 void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    static auto lastTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count() / 1000.0f;
+    lastTime = currentTime;
+
     // Rotate the model.
-    glm::mat4x4 R = glm::rotate(glm::mat4x4(1.0f), 0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+    auto rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
+    auto rotationAngle = 0.1f * deltaTime;
+    glm::mat4x4 R = glm::rotate(glm::mat4x4(1.0f), rotationAngle, rotationAxis);
     pImpl->sceneObj->Update(R);
 
     glm::mat4x4 V = pImpl->camera->GetViewMatrix();
