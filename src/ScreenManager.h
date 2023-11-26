@@ -32,15 +32,18 @@ private:
     // ScreenManager Private Methods.
     ScreenManager();
 
+    int CalculateFrameRate();
+
     void SetupRenderState();
     void SetupScene(int);
     void SetupShaderLib();
     void SetupLights();
     void SetupCamera();
+    void SetupMenu();
+
     void ReshapeCB(int, int);
     void ProcessSpecialKeysCB(int, int, int);
     void ProcessKeysCB(unsigned char, int, int);
-    void SetupMenu();
     void RenderSceneCB();
     void MenuCB(int);
 

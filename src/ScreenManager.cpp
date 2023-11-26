@@ -186,6 +186,24 @@ ScreenManager::ScreenManager() {
     }
 }
 
+int ScreenManager::CalculateFrameRate() {
+    static int frameCount = 0;
+    static int lastFrameCount = 0;
+    static auto lastTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count() / 1000.0f;
+    frameCount++;
+
+    if (deltaTime >= 1.0f) {
+        lastFrameCount = frameCount;
+        frameCount = 0;
+        lastTime = currentTime;
+    }
+
+    return lastFrameCount;
+}
+
 // Callback function for glutDisplayFunc.
 void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -195,6 +213,13 @@ void ScreenManager::RenderSceneCB() {
     auto currentTime = std::chrono::high_resolution_clock::now();
     float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count() / 1000.0f;
     lastTime = currentTime;
+
+    // Calculate frame rate.
+    int frameRate = CalculateFrameRate();
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glRasterPos2f(-0.95f, 0.9f);
+    std::string frameRateStr = "FPS: " + std::to_string(frameRate);
+    glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)frameRateStr.c_str());
 
     // Rotate the model.
     auto rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
