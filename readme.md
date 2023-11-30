@@ -32,7 +32,7 @@ The project includes:
 ### 1.1. Linux
 
 * OS: Linux Ubuntu 22.04
-* Compiler: g++ 11.4.0, C++17
+* Compiler: g++ 11.4.0, C++20
 * Package Manager: vcpkg
 * Library: freeglut, glew, glm
 
@@ -40,7 +40,7 @@ The project includes:
 
 * OS: Windows 11
 * Shell: PowerShell 7.2.1
-* Compiler: MSVC, C++17
+* Compiler: MSVC, C++20
 * Package Manager: vcpkg
 * Library: freeglut, glew, glm
 

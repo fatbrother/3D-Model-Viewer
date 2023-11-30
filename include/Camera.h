@@ -11,6 +11,7 @@ public:
 
 	glm::mat4x4& GetViewMatrix() { return viewMatrix; }
 	glm::mat4x4& GetProjMatrix() { return projMatrix; }
+	glm::vec3& GetPosition() { return position; }
 
 	void UpdateView(const glm::vec3 newPos, const glm::vec3 newTarget, const glm::vec3 up);
 	void UpdateAspectRatio(const float aspectRatio);

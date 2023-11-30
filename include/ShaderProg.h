@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <filesystem>
+
 #include <GL/glew.h>
 
 #include "ShaderProg.h"
@@ -13,7 +15,7 @@ public:
 	ShaderProg();
 	~ShaderProg();
 
-	bool LoadFromFiles(const std::string, const std::string, const std::string);
+	bool LoadFromFiles(const std::filesystem::path&, const std::filesystem::path&, const std::filesystem::path&);
 	void Bind() { glUseProgram(shaderProgId); };
 	void Unbind() { glUseProgram(0); };
 
@@ -29,7 +31,7 @@ protected:
 private:
 	// ShaderProg Private Methods.
 	GLuint AddShader(const std::string& sourceText, GLenum shaderType);
-	static bool LoadShaderTextFromFile(const std::string filePath, std::string& sourceText);
+	static bool LoadShaderTextFromFile(const std::filesystem::path&, std::string& sourceText);
 
 	// ShaderProg Private Data.
 	GLint locMVP;

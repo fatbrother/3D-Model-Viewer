@@ -11,7 +11,7 @@
     - [7. Template wrap function](#7-template-wrap-function)
     - [8. Load model](#8-load-model)
     - [9. Private implementation](#9-private-implementation)
-  - [10. Result](#10-result)
+    - [10. Result](#10-result)
   - [HW2 Light and Shading](#hw2-light-and-shading)
     - [1. Shader implementation](#1-shader-implementation)
     - [2. Light](#2-light)
@@ -163,7 +163,7 @@ It's also have the benefit of reducing compile time, because the header file doe
 + std::unique_ptr<Impl> pImpl;
 ```
 
-## 10. Result
+### 10. Result
 
 ![Bunny](./images/HW1/bunny.png)
 

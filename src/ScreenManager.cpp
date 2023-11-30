@@ -54,9 +54,9 @@ public:
 
 // SceneLight (for visualization of a point light).
 // T is derived from PointLight
-template<typename T,
-    typename = std::enable_if<std::is_base_of<PointLight, T>::value>>
-    struct SceneLight
+template<typename T>
+    requires std::derived_from<T, PointLight>
+struct SceneLight
 {
     SceneLight() {
         light = nullptr;
@@ -228,8 +228,9 @@ void ScreenManager::RenderSceneCB() {
     pImpl->sceneObj->Update(R);
 
     glm::mat4x4 V = pImpl->camera->GetViewMatrix();
-    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(pImpl->sceneObj->worldMatrix));
+    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(V * pImpl->sceneObj->worldMatrix));
     glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * V * pImpl->sceneObj->worldMatrix;
+    auto cameraPos = pImpl->camera->GetPosition();
 
     pImpl->sceneObj->mesh->Render(
         pImpl->phongShader,
@@ -238,9 +239,11 @@ void ScreenManager::RenderSceneCB() {
         pImpl->sceneObj->worldMatrix,
         normalMatrix,
         pImpl->ambientLight,
+        cameraPos,
         pImpl->dirLight,
         pImpl->pointLightObj->light,
-        pImpl->spotLightObj->light);
+        pImpl->spotLightObj->light
+    );
 
     // Visualize the light with fill color. ------------------------------------------------------
     // Bind shader and set parameters.

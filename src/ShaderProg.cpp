@@ -20,7 +20,7 @@ ShaderProg::~ShaderProg() {
     glDeleteProgram(shaderProgId);
 }
 
-bool ShaderProg::LoadFromFiles(const std::string vsFilePath, const std::string fsFilePath, const std::string gsFilePath) {
+bool ShaderProg::LoadFromFiles(const std::filesystem::path& vsFilePath, const std::filesystem::path& fsFilePath, const std::filesystem::path& gsFilePath) {
     // Load the vertex shader from a source file and attach it to the shader program.
     std::string vs, fs, gs;
     if (!LoadShaderTextFromFile(vsFilePath, vs)) {
@@ -110,8 +110,8 @@ GLuint ShaderProg::AddShader(const std::string& sourceText, GLenum shaderType) {
     return shaderObj;
 }
 
-bool ShaderProg::LoadShaderTextFromFile(const std::string filePath, std::string& sourceText) {
-    std::ifstream sourceFile(filePath.c_str());
+bool ShaderProg::LoadShaderTextFromFile(const std::filesystem::path& filePath, std::string& sourceText) {
+    std::ifstream sourceFile(filePath);
     if (!sourceFile) {
         std::cerr << "[ERROR] Failed to open shader source file: " << filePath << std::endl;
         return false;

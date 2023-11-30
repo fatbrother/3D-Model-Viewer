@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2] - 2023-12-26
+### Added
+- Added fps counter
+
+### Changed
+- Use clamp instead of min/max for color values
+
 ## [2.1] - 2023-12-20
 ### Added
 - Face culling for back faces

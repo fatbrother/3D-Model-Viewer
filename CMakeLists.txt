@@ -4,18 +4,18 @@ project(CG2023_HW)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(FreeGLUT CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
 # set source path to src
-set(SOURCE_PATH ${PROJECT_SOURCE_DIR}/src)
+set(INCLUDE_PATH ${CMAKE_SOURCE_DIR}/include)
 
-include_directories(${SOURCE_PATH})
+include_directories(${INCLUDE_PATH})
 
-file (GLOB_RECURSE SOURCE_FILES ${SOURCE_PATH}/*.cpp ${SOURCE_PATH}/*.h)
+file (GLOB_RECURSE SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
 add_executable(CG2023_HW ${SOURCE_FILES})
 

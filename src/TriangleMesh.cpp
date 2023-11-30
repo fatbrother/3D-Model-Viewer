@@ -270,6 +270,7 @@ void TriangleMesh::Render(
 	const glm::mat4& M,
 	const glm::mat4& NM,
 	const glm::vec3& ambientLight,
+	const glm::vec3& cameraPos,
 	const std::shared_ptr<DirectionalLight>& dirLight,
 	const std::shared_ptr<PointLight>& pointLight, 
 	const std::shared_ptr<SpotLight>& spotLight
@@ -279,8 +280,9 @@ void TriangleMesh::Render(
 		shader->Bind();
 		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(M));
 		glUniformMatrix4fv(shader->GetLocV(), 1, GL_FALSE, glm::value_ptr(V));
-		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(M))));
+		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(NM));
 		glUniformMatrix4fv(shader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
+		glUniform3fv(shader->GetLocCameraPos(), 1, glm::value_ptr(cameraPos));
 		// Material properties.
 		glUniform3fv(shader->GetLocKa(), 1, glm::value_ptr(subMesh.material->GetKa()));
 		glUniform3fv(shader->GetLocKd(), 1, glm::value_ptr(subMesh.material->GetKd()));
