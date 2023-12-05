@@ -47,25 +47,7 @@ private:
     void RenderSceneCB();
     void MenuCB(int);
 
-    /**
-     * @brief Convert a member function to a lambda function.
-     *
-     * @tparam Args
-     * @param func
-     * @return lambda function
-     *
-     * @note Usage: glutRegisterFunc(Member2Callback(&ScreenManager::MemberFunc));
-    */
-    template<typename... Args>
-    static auto Member2Callback(void(ScreenManager::* func)(Args...));
-    
 private:
-    enum RenderStyle
-    {
-        FILL_COLOR,
-        VIS_NORMAL,
-    };
-
     // ScreenManager Private Data.
     struct Impl;
     std::unique_ptr<Impl> pImpl;

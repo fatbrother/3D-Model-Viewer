@@ -30,12 +30,6 @@ std::shared_ptr<ScreenManager> ScreenManager::GetInstance() {
     return instance;
 }
 
-template<typename... Args>
-auto ScreenManager::Member2Callback(void(ScreenManager::* func)(Args...)) {
-    static void(ScreenManager:: * s_func)(Args...) = func;
-    return [](Args... args) { (GetInstance().get()->*s_func)(args...); };
-}
-
 class SceneObject
 {
 public:
@@ -85,7 +79,6 @@ struct ScreenManager::Impl {
     int height;
     std::vector<std::string> objNames;
     std::vector<MeshPtr> meshes;
-    RenderStyle renderStyle = RenderStyle::FILL_COLOR;
     std::unique_ptr<FillColorShaderProg> fillColorShader;
     std::unique_ptr<PhongShadingDemoShaderProg> phongShader;
     std::unique_ptr<SceneObject> sceneObj;
@@ -126,12 +119,12 @@ void ScreenManager::Start(int argc, char** argv) {
     SetupScene(0);
 
     // Register callback functions.
-    glutCreateMenu(Member2Callback(&ScreenManager::MenuCB));
-    glutDisplayFunc(Member2Callback(&ScreenManager::RenderSceneCB));
-    glutIdleFunc(Member2Callback(&ScreenManager::RenderSceneCB));
-    glutReshapeFunc(Member2Callback(&ScreenManager::ReshapeCB));
-    glutSpecialFunc(Member2Callback(&ScreenManager::ProcessSpecialKeysCB));
-    glutKeyboardFunc(Member2Callback(&ScreenManager::ProcessKeysCB));
+    glutCreateMenu([](int value) { GetInstance()->MenuCB(value); });
+    glutDisplayFunc([]() { GetInstance()->RenderSceneCB(); });
+    glutIdleFunc([]() { glutPostRedisplay(); });
+    glutReshapeFunc([](int w, int h) { GetInstance()->ReshapeCB(w, h); });
+    glutSpecialFunc([](int key, int x, int y) { GetInstance()->ProcessSpecialKeysCB(key, x, y); });
+    glutKeyboardFunc([](unsigned char key, int x, int y) { GetInstance()->ProcessKeysCB(key, x, y); });
 
     SetupMenu();
 
@@ -208,11 +201,17 @@ int ScreenManager::CalculateFrameRate() {
 void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#ifdef __linux__
     static auto lastTime = std::chrono::high_resolution_clock::now();
-
     auto currentTime = std::chrono::high_resolution_clock::now();
     float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count() / 1000.0f;
     lastTime = currentTime;
+    float rotationAngle = 0.001f * deltaTime;
+#endif
+
+#ifdef _WIN32
+    static float rotationAngle = 0.0005f;
+#endif
 
     // Calculate frame rate.
     int frameRate = CalculateFrameRate();
@@ -223,7 +222,6 @@ void ScreenManager::RenderSceneCB() {
 
     // Rotate the model.
     auto rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-    auto rotationAngle = 0.1f * deltaTime;
     glm::mat4x4 R = glm::rotate(glm::mat4x4(1.0f), rotationAngle, rotationAxis);
     pImpl->sceneObj->Update(R);
 

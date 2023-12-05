@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(FreeGLUT CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(OpenCV CONFIG REQUIRED)
 
 # set source path to src
 set(INCLUDE_PATH ${CMAKE_SOURCE_DIR}/include)
@@ -22,3 +23,4 @@ add_executable(CG2023_HW ${SOURCE_FILES})
 target_link_libraries(CG2023_HW PRIVATE $<IF:$<TARGET_EXISTS:FreeGLUT::freeglut>,FreeGLUT::freeglut,FreeGLUT::freeglut_static>)
 target_link_libraries(CG2023_HW PRIVATE GLEW::GLEW)
 target_link_libraries(CG2023_HW PRIVATE glm::glm)
+target_link_libraries(CG2023_HW PRIVATE opencv_ml opencv_dnn opencv_core opencv_flann)

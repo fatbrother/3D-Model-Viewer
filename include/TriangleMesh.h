@@ -34,6 +34,17 @@ public:
 
 	/**
 	 * @brief Render the mesh.
+	 * 
+	 * @param shaderProg The shader program to use.
+	 * @param modelMat Model matrix.
+	 * @param viewMat View matrix.
+	 * @param projMat Projection matrix.
+	 * @param normalMat Normal matrix.
+	 * @param eyePos Eye position.
+	 * @param ambientColor Ambient color.
+	 * @param directionalLight Directional light.
+	 * @param pointLight Point light.
+	 * @param spotLight Spot light.
 	*/
 	void Render(
 		const std::unique_ptr<PhongShadingDemoShaderProg>&, 
