@@ -47,7 +47,7 @@ void Skybox::Render(std::shared_ptr<Camera> camera, std::shared_ptr<SkyboxShader
 	// Set transform.
 	// -------------------------------------------------------
 	// TODO: modify code here to rotate the skybox.
-	glm::mat4x4 MVP = camera->GetProjMatrix() * camera->GetViewMatrix();
+	glm::mat4x4 MVP = camera->GetProjMatrix() * camera->GetViewMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0)) * glm::rotate(glm::mat4(1.0f), rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
 	// -------------------------------------------------------
 	glUniformMatrix4fv(shader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
 	// Set material properties.

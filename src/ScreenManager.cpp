@@ -20,7 +20,8 @@
 #include "ShaderProg.h"
 #include "Light.h"
 #include "Camera.h"
-#include <Skybox.h>
+#include "Skybox.h"
+#include "Clock.h"
 
 namespace opengl_homework {
 
@@ -78,6 +79,7 @@ struct ScreenManager::Impl {
 
     int width;
     int height;
+    Clock clock;
     std::vector<std::string> objNames;
     std::vector<MeshPtr> meshes;
     std::shared_ptr<FillColorShaderProg> fillColorShader;
@@ -205,17 +207,9 @@ int ScreenManager::CalculateFrameRate() {
 void ScreenManager::RenderSceneCB() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#ifdef __linux__
-    static auto lastTime = std::chrono::high_resolution_clock::now();
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime).count() / 1000.0f;
-    lastTime = currentTime;
-    float rotationAngle = 0.001f * deltaTime;
-#endif
-
-#ifdef _WIN32
-    static float rotationAngle = 0.0005f;
-#endif
+    double deltaTime = pImpl->clock.GetElapsedTime();
+    pImpl->clock.Reset();
+    float rotationAngle = 0.1f * deltaTime;
 
     // Calculate frame rate.
     int frameRate = CalculateFrameRate();
@@ -361,6 +355,7 @@ void ScreenManager::SetupScene(int objIndex) {
     }
     pImpl->sceneObj->mesh = pImpl->meshes[objIndex];
     pImpl->sceneObj->mesh->CreateBuffers();
+    pImpl->clock.Reset();
 }
 
 void ScreenManager::SetupLights() {
