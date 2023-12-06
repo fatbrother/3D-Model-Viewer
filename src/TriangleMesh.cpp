@@ -5,6 +5,7 @@
 #include <GL/freeglut.h>
 
 // GLM headers.
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 // C++ STL headers.
@@ -264,23 +265,25 @@ void TriangleMesh::ReleaseBuffers() {
 
 // Desc: Render the mesh.
 void TriangleMesh::Render(
-	const std::unique_ptr<PhongShadingDemoShaderProg>& shader,
-	const glm::mat4& MVP,
-	const glm::mat4& V,
-	const glm::mat4& M,
-	const glm::mat4& NM,
+	const std::shared_ptr<PhongShadingDemoShaderProg>& shader,
+	const glm::mat4& worldMatrix,
 	const glm::vec3& ambientLight,
-	const glm::vec3& cameraPos,
 	const std::shared_ptr<DirectionalLight>& dirLight,
 	const std::shared_ptr<PointLight>& pointLight, 
-	const std::shared_ptr<SpotLight>& spotLight
+	const std::shared_ptr<SpotLight>& spotLight,
+	const std::shared_ptr<Camera>& camera
 	) const {
+
+	glm::mat4x4 V = camera->GetViewMatrix();
+    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(V * worldMatrix));
+    glm::mat4x4 MVP = camera->GetProjMatrix() * V * worldMatrix;
+    auto cameraPos = camera->GetPosition();
 
 	for (auto& subMesh : pImpl->subMeshes) {
 		shader->Bind();
-		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(M));
+		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(worldMatrix));
 		glUniformMatrix4fv(shader->GetLocV(), 1, GL_FALSE, glm::value_ptr(V));
-		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(NM));
+		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(normalMatrix));
 		glUniformMatrix4fv(shader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
 		glUniform3fv(shader->GetLocCameraPos(), 1, glm::value_ptr(cameraPos));
 		// Material properties.

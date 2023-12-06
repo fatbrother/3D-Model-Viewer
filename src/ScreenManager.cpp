@@ -20,6 +20,7 @@
 #include "ShaderProg.h"
 #include "Light.h"
 #include "Camera.h"
+#include <Skybox.h>
 
 namespace opengl_homework {
 
@@ -79,13 +80,15 @@ struct ScreenManager::Impl {
     int height;
     std::vector<std::string> objNames;
     std::vector<MeshPtr> meshes;
-    std::unique_ptr<FillColorShaderProg> fillColorShader;
-    std::unique_ptr<PhongShadingDemoShaderProg> phongShader;
+    std::shared_ptr<FillColorShaderProg> fillColorShader;
+    std::shared_ptr<PhongShadingDemoShaderProg> phongShader;
+    std::shared_ptr<SkyboxShaderProg> skyboxShader;
     std::unique_ptr<SceneObject> sceneObj;
-    std::unique_ptr<Camera> camera;
+    std::shared_ptr<Camera> camera;
     std::shared_ptr<DirectionalLight> dirLight;
     std::shared_ptr<SceneLight<PointLight>> pointLightObj;
     std::shared_ptr<SceneLight<SpotLight>> spotLightObj;
+    std::shared_ptr<Skybox> skybox;
     glm::vec3 ambientLight;
     float lightMoveSpeed = 0.2f;
 };
@@ -97,7 +100,8 @@ struct ScreenManager::Impl {
 void ScreenManager::Start(int argc, char** argv) {
     // Setting window properties.
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+    glutSetOption(GLUT_MULTISAMPLE, 4);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
     glutInitWindowSize(pImpl->width, pImpl->height);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("HW2: Lighting and Shading");
@@ -116,10 +120,10 @@ void ScreenManager::Start(int argc, char** argv) {
     SetupLights();
     SetupCamera();
     SetupShaderLib();
+    SetupSkybox("textures/photostudio_02_2k.png");
     SetupScene(0);
 
     // Register callback functions.
-    glutCreateMenu([](int value) { GetInstance()->MenuCB(value); });
     glutDisplayFunc([]() { GetInstance()->RenderSceneCB(); });
     glutIdleFunc([]() { glutPostRedisplay(); });
     glutReshapeFunc([](int w, int h) { GetInstance()->ReshapeCB(w, h); });
@@ -225,22 +229,14 @@ void ScreenManager::RenderSceneCB() {
     glm::mat4x4 R = glm::rotate(glm::mat4x4(1.0f), rotationAngle, rotationAxis);
     pImpl->sceneObj->Update(R);
 
-    glm::mat4x4 V = pImpl->camera->GetViewMatrix();
-    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(V * pImpl->sceneObj->worldMatrix));
-    glm::mat4x4 MVP = pImpl->camera->GetProjMatrix() * V * pImpl->sceneObj->worldMatrix;
-    auto cameraPos = pImpl->camera->GetPosition();
-
     pImpl->sceneObj->mesh->Render(
         pImpl->phongShader,
-        MVP,
-        V,
         pImpl->sceneObj->worldMatrix,
-        normalMatrix,
         pImpl->ambientLight,
-        cameraPos,
         pImpl->dirLight,
         pImpl->pointLightObj->light,
-        pImpl->spotLightObj->light
+        pImpl->spotLightObj->light,
+        pImpl->camera
     );
 
     // Visualize the light with fill color. ------------------------------------------------------
@@ -276,6 +272,10 @@ void ScreenManager::RenderSceneCB() {
         pImpl->spotLightObj->light->Draw();
 
         pImpl->fillColorShader->Unbind();
+    }
+    if (pImpl->skybox != nullptr) {
+        pImpl->skybox->SetRotation(pImpl->skybox->GetRotation() + rotationAngle);
+        pImpl->skybox->Render(pImpl->camera, pImpl->skyboxShader);
     }
 
     glutSwapBuffers();
@@ -403,9 +403,17 @@ void ScreenManager::SetupCamera() {
     pImpl->camera->UpdateProjection();
 }
 
+void ScreenManager::SetupSkybox(std::filesystem::path skyboxDir) {
+    const int numSlices = 36;
+    const int numStacks = 18;
+    const float radius = 50.0f;
+    pImpl->skybox = std::make_shared<Skybox>(skyboxDir, numSlices, numStacks, radius);
+}
+
 void ScreenManager::SetupShaderLib() {
     pImpl->fillColorShader = std::make_unique<FillColorShaderProg>();
     pImpl->phongShader = std::make_unique<PhongShadingDemoShaderProg>();
+    pImpl->skyboxShader = std::make_unique<SkyboxShaderProg>();
 
     if (!pImpl->fillColorShader->LoadFromFiles("shaders/fixed_color.vs", "shaders/fixed_color.fs", "")) {
         std::cerr << "Failed to load fixed_color shader." << std::endl;
@@ -415,17 +423,51 @@ void ScreenManager::SetupShaderLib() {
         std::cerr << "Failed to load gouraud shader." << std::endl;
         exit(EXIT_FAILURE);
     }
+    if (!pImpl->skyboxShader->LoadFromFiles("shaders/skybox.vs", "shaders/skybox.fs", "")) {
+        std::cerr << "Failed to load skybox shader." << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 void ScreenManager::SetupMenu() {
-    // Create the menu and attach it to the right button.
-    for (int i = 0; i < pImpl->objNames.size(); i++)
+    int skyboxMenu = glutCreateMenu([](int value) { GetInstance()->SkyboxMenuCB(value); });
+    glutAddMenuEntry("Photostudio", 1);
+    glutAddMenuEntry("Sunflowers", 2);
+    glutAddMenuEntry("Veranda", 3);
+
+    int objMenu = glutCreateMenu([](int value) { GetInstance()->ObjectMenuCB(value); });
+    for (int i = 0; i < pImpl->objNames.size(); i++) {
         glutAddMenuEntry(pImpl->objNames[i].c_str(), i + 1);
+    }
+
+    int mainMenu = glutCreateMenu([](int value) { GetInstance()->MainMenuCB(value); });
+    glutAddSubMenu("Skybox", skyboxMenu);
+    glutAddSubMenu("Model", objMenu);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
-void ScreenManager::MenuCB(int value) {
+void ScreenManager::MainMenuCB(int value) {
+    return;
+}
+
+void ScreenManager::ObjectMenuCB(int value) {
     SetupScene(value - 1);
+}
+
+void ScreenManager::SkyboxMenuCB(int value) {
+    switch (value) {
+    case 1:
+        SetupSkybox("textures/photostudio_02_2k.png");
+        break;
+    case 2:
+        SetupSkybox("textures/sunflowers_2k.png");
+        break;
+    case 3:
+        SetupSkybox("textures/veranda_2k.png");
+        break;
+    default:
+        break;
+    }
 }
 
 } // namespace opengl_homework

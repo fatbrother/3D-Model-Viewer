@@ -2,6 +2,7 @@
 
 // C++ STL headers.
 #include <memory>
+#include <filesystem>
 
 namespace opengl_homework {
 
@@ -39,13 +40,16 @@ private:
     void SetupShaderLib();
     void SetupLights();
     void SetupCamera();
+    void SetupSkybox(std::filesystem::path);
     void SetupMenu();
 
     void ReshapeCB(int, int);
     void ProcessSpecialKeysCB(int, int, int);
     void ProcessKeysCB(unsigned char, int, int);
     void RenderSceneCB();
-    void MenuCB(int);
+    void MainMenuCB(int);
+    void ObjectMenuCB(int);
+    void SkyboxMenuCB(int);
 
 private:
     // ScreenManager Private Data.

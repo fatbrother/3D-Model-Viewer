@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.22)
 
 project(CG2023_HW)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(FreeGLUT CONFIG REQUIRED)
@@ -23,4 +21,5 @@ add_executable(CG2023_HW ${SOURCE_FILES})
 target_link_libraries(CG2023_HW PRIVATE $<IF:$<TARGET_EXISTS:FreeGLUT::freeglut>,FreeGLUT::freeglut,FreeGLUT::freeglut_static>)
 target_link_libraries(CG2023_HW PRIVATE GLEW::GLEW)
 target_link_libraries(CG2023_HW PRIVATE glm::glm)
-target_link_libraries(CG2023_HW PRIVATE opencv_ml opencv_dnn opencv_core opencv_flann)
+set(cv_libs opencv_ml opencv_dnn opencv_core opencv_flann opencv_imgproc opencv_highgui opencv_imgcodecs)
+target_link_libraries(CG2023_HW PRIVATE ${cv_libs})

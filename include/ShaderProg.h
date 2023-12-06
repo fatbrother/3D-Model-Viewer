@@ -115,3 +115,24 @@ private:
 	GLint locSpotLightCutoff;
 	GLint locSpotLightTotalWidth;
 };
+
+// ------------------------------------------------------------------------------------------------
+
+// SkyboxShaderProg Declarations.
+class SkyboxShaderProg : public ShaderProg
+{
+public:
+	// SkyboxShaderProg Public Methods.
+	SkyboxShaderProg();
+	~SkyboxShaderProg();
+
+	GLint GetLocMapKd() const { return locMapKd; }
+
+protected:
+	// PhongShadingDemoShaderProg Protected Methods.
+	void GetUniformVariableLocation();
+
+private:
+	// SkyboxShaderProg Public Data.
+	GLint locMapKd;
+};

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "ShaderProg.h"
+#include "ImageTexture.h"
 
 // Material Declarations.
 class Material
@@ -52,4 +53,23 @@ private:
 	glm::vec3 Kd;
 	glm::vec3 Ks;
 	float Ns;
+};
+
+// ------------------------------------------------------------------------------------------------
+
+// SkyboxMaterial Declarations.
+class SkyboxMaterial : public Material
+{
+public:
+	// SkyboxMaterial Public Methods.
+	SkyboxMaterial() {
+		mapKd = nullptr;
+	};
+	~SkyboxMaterial() {};
+	void SetMapKd(std::shared_ptr<ImageTexture> tex) { mapKd = tex; }
+	std::shared_ptr<ImageTexture> GetMapKd() const { return mapKd; }
+
+private:
+	// SkyboxMaterial Private Data.
+	std::shared_ptr<ImageTexture> mapKd;
 };

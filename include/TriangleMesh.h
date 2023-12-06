@@ -9,6 +9,7 @@
 // Project headers.
 #include "Light.h"
 #include "ShaderProg.h"
+#include "Camera.h"
 
 namespace opengl_homework {
 
@@ -36,10 +37,7 @@ public:
 	 * @brief Render the mesh.
 	 * 
 	 * @param shaderProg The shader program to use.
-	 * @param modelMat Model matrix.
-	 * @param viewMat View matrix.
 	 * @param projMat Projection matrix.
-	 * @param normalMat Normal matrix.
 	 * @param eyePos Eye position.
 	 * @param ambientColor Ambient color.
 	 * @param directionalLight Directional light.
@@ -47,16 +45,13 @@ public:
 	 * @param spotLight Spot light.
 	*/
 	void Render(
-		const std::unique_ptr<PhongShadingDemoShaderProg>&, 
-		const glm::mat4&, 
-		const glm::mat4&, 
+		const std::shared_ptr<PhongShadingDemoShaderProg>&,
 		const glm::mat4&,
-		const glm::mat4&,
-		const glm::vec3&, 
 		const glm::vec3&, 
 		const std::shared_ptr<DirectionalLight>&,
 		const std::shared_ptr<PointLight>&, 
-		const std::shared_ptr<SpotLight>&) const;
+		const std::shared_ptr<SpotLight>&,
+		const std::shared_ptr<Camera>&) const;
 
 	int GetNumVertices() const;
 	int GetNumTriangles() const;

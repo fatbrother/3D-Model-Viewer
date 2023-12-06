@@ -180,3 +180,18 @@ void PhongShadingDemoShaderProg::GetUniformVariableLocation() {
     locAmbientLight = glGetUniformLocation(shaderProgId, "ambientLight");
 }
 
+// ------------------------------------------------------------------------------------------------
+
+SkyboxShaderProg::SkyboxShaderProg()
+{
+    locMapKd = -1;
+}
+
+SkyboxShaderProg::~SkyboxShaderProg()
+{}
+
+void SkyboxShaderProg::GetUniformVariableLocation()
+{
+    ShaderProg::GetUniformVariableLocation();
+    locMapKd = glGetUniformLocation(shaderProgId, "mapKd");
+}
