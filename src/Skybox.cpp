@@ -45,10 +45,7 @@ void Skybox::Render(std::shared_ptr<Camera> camera, std::shared_ptr<SkyboxShader
 	shader->Bind();
 
 	// Set transform.
-	// -------------------------------------------------------
-	// TODO: modify code here to rotate the skybox.
 	glm::mat4x4 MVP = camera->GetProjMatrix() * camera->GetViewMatrix() * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0)) * glm::rotate(glm::mat4(1.0f), rotationY, glm::vec3(0.0f, 1.0f, 0.0f));
-	// -------------------------------------------------------
 	glUniformMatrix4fv(shader->GetLocMVP(), 1, GL_FALSE, glm::value_ptr(MVP));
 	// Set material properties.
 	if (material->GetMapKd() != nullptr) {
@@ -83,9 +80,9 @@ void Skybox::CreateSphere3D(const int nSlices, const int nStacks, const float ra
 			// std::cout << glm::degrees<float>(phi) << " " << glm::degrees<float>(theta) << std::endl;
 			glm::vec2 uv = glm::vec2((float)p / (float)numPhi, (float)t / (float)numTheta);
 			// std::cout << uv.x << " " << uv.y << std::endl;
-			float x = radius * glm::cos(theta) * glm::cos(phi);
-			float y = radius * glm::sin(theta);
-			float z = radius * glm::cos(theta) * glm::sin(phi);
+			float x = radius * std::cos(theta) * std::cos(phi);
+			float y = radius * std::sin(theta);
+			float z = radius * std::cos(theta) * std::sin(phi);
 
 			VertexPT vt = VertexPT(glm::vec3(x, y, z), uv);
 			vertices.push_back(vt);

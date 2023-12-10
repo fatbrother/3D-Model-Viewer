@@ -35,6 +35,7 @@ private:
 
     int CalculateFrameRate();
 
+    void SetupModels();
     void SetupRenderState();
     void SetupScene(int);
     void SetupShaderLib();

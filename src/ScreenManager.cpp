@@ -118,6 +118,7 @@ void ScreenManager::Start(int argc, char** argv) {
     }
 
     // Initialization.
+    SetupModels();
     SetupRenderState();
     SetupLights();
     SetupCamera();
@@ -144,45 +145,6 @@ void ScreenManager::Start(int argc, char** argv) {
 
 ScreenManager::ScreenManager() {
     pImpl = std::make_unique<Impl>();
-
-    // Load all obj files in the models directory.
-    for (const auto& entry : std::filesystem::directory_iterator("models")) {
-        if (entry.is_directory()) {
-            pImpl->objNames.push_back(entry.path().filename().string());
-        }
-    }
-
-    // find the minimum bytes size of the obj files and swap it to the first position
-    int min = INT_MAX;
-    int minIndex = 0;
-    for (int i = 0; i < pImpl->objNames.size(); i++) {
-        auto size = std::filesystem::file_size("models/" + pImpl->objNames[i] + "/" + pImpl->objNames[i] + ".obj");
-        if (size < min) {
-            min = size;
-            minIndex = i;
-        }
-    }
-    std::swap(pImpl->objNames[0], pImpl->objNames[minIndex]);
-    // Load all obj files.
-    auto objBasePath = std::filesystem::path("models");
-    pImpl->meshes.resize(pImpl->objNames.size());
-
-    // Load first model in the main thread.
-    auto firstFilePath = objBasePath / pImpl->objNames[0] / (pImpl->objNames[0] + ".obj");
-    pImpl->meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
-
-    auto threadFunc = [](
-        int i,
-        const std::filesystem::path& objBasePath,
-        const std::vector<std::string>& objNames,
-        std::vector<MeshPtr>& meshes) {
-            auto objFilePath = objBasePath / objNames[i] / (objNames[i] + ".obj");
-            meshes[i] = std::make_shared<TriangleMesh>(objFilePath, true);
-        };
-    for (int i = 1; i < pImpl->objNames.size(); i++) {
-        std::thread thread(threadFunc, i, objBasePath, pImpl->objNames, std::ref(pImpl->meshes));
-        thread.detach();
-    }
 }
 
 int ScreenManager::CalculateFrameRate() {
@@ -277,8 +239,6 @@ void ScreenManager::RenderSceneCB() {
 
 // Callback function for glutReshapeFunc.
 void ScreenManager::ReshapeCB(int w, int h) {
-    // Adjust camera and projection here.
-
     // Update viewport.
     pImpl->width = w;
     pImpl->height = h;
@@ -333,6 +293,47 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
     }
 }
 
+void ScreenManager::SetupModels() {
+    // Load all obj files in the models directory.
+    for (const auto& entry : std::filesystem::directory_iterator("models")) {
+        if (entry.is_directory()) {
+            pImpl->objNames.push_back(entry.path().filename().string());
+        }
+    }
+
+    // find the minimum bytes size of the obj files and swap it to the first position
+    int min = INT_MAX;
+    int minIndex = 0;
+    for (int i = 0; i < pImpl->objNames.size(); i++) {
+        auto size = std::filesystem::file_size("models/" + pImpl->objNames[i] + "/" + pImpl->objNames[i] + ".obj");
+        if (size < min) {
+            min = size;
+            minIndex = i;
+        }
+    }
+    std::swap(pImpl->objNames[0], pImpl->objNames[minIndex]);
+    // Load all obj files.
+    auto objBasePath = std::filesystem::path("models");
+    pImpl->meshes.resize(pImpl->objNames.size());
+
+    // Load first model in the main thread.
+    auto firstFilePath = objBasePath / pImpl->objNames[0] / (pImpl->objNames[0] + ".obj");
+    pImpl->meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
+
+    auto threadFunc = [](
+        int i,
+        const std::filesystem::path& objBasePath,
+        const std::vector<std::string>& objNames,
+        std::vector<MeshPtr>& meshes) {
+            auto objFilePath = objBasePath / objNames[i] / (objNames[i] + ".obj");
+            meshes[i] = std::make_shared<TriangleMesh>(objFilePath, true);
+        };
+    for (int i = 1; i < pImpl->objNames.size(); i++) {
+        std::thread thread(threadFunc, i, objBasePath, pImpl->objNames, std::ref(pImpl->meshes));
+        thread.detach();
+    }
+}
+
 void ScreenManager::SetupRenderState() {
     glEnable(GL_DEPTH_TEST);
 
@@ -355,6 +356,9 @@ void ScreenManager::SetupScene(int objIndex) {
     }
     pImpl->sceneObj->mesh = pImpl->meshes[objIndex];
     pImpl->sceneObj->mesh->CreateBuffers();
+
+    pImpl->sceneObj->mesh->PrintMeshInfo();
+
     pImpl->clock.Reset();
 }
 

@@ -190,8 +190,6 @@ bool TriangleMesh::LoadFromFile(const std::filesystem::path& objFilePath, const 
 		}
 		pImpl->objExtent = (maxPos - minPos) / maxLen;
 	}
-
-	PrintMeshInfo();
 	return true;
 }
 
@@ -235,6 +233,13 @@ bool TriangleMesh::LoadMtllib(const std::filesystem::path& mtlPath) {
 			iss >> n;
 			pImpl->materials[curMtlName]->SetNs(n);
 		}
+		else if (type == "map_Kd") {
+			std::string texFileName;
+			iss >> texFileName;
+			pImpl->materials[curMtlName]->SetMapKd(
+				std::make_shared<ImageTexture>(mtlPath.parent_path() / texFileName)
+			);
+		}
 	}
 
 	fin.close();
@@ -269,18 +274,18 @@ void TriangleMesh::Render(
 	const glm::mat4& worldMatrix,
 	const glm::vec3& ambientLight,
 	const std::shared_ptr<DirectionalLight>& dirLight,
-	const std::shared_ptr<PointLight>& pointLight, 
+	const std::shared_ptr<PointLight>& pointLight,
 	const std::shared_ptr<SpotLight>& spotLight,
 	const std::shared_ptr<Camera>& camera
-	) const {
-
+) const {
 	glm::mat4x4 V = camera->GetViewMatrix();
-    glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(V * worldMatrix));
-    glm::mat4x4 MVP = camera->GetProjMatrix() * V * worldMatrix;
-    auto cameraPos = camera->GetPosition();
+	glm::mat4x4 normalMatrix = glm::transpose(glm::inverse(V * worldMatrix));
+	glm::mat4x4 MVP = camera->GetProjMatrix() * V * worldMatrix;
+	auto cameraPos = camera->GetPosition();
 
-	for (auto& subMesh : pImpl->subMeshes) {
+	for (const auto& subMesh : pImpl->subMeshes) {
 		shader->Bind();
+
 		glUniformMatrix4fv(shader->GetLocM(), 1, GL_FALSE, glm::value_ptr(worldMatrix));
 		glUniformMatrix4fv(shader->GetLocV(), 1, GL_FALSE, glm::value_ptr(V));
 		glUniformMatrix4fv(shader->GetLocNM(), 1, GL_FALSE, glm::value_ptr(normalMatrix));
@@ -291,6 +296,10 @@ void TriangleMesh::Render(
 		glUniform3fv(shader->GetLocKd(), 1, glm::value_ptr(subMesh.material->GetKd()));
 		glUniform3fv(shader->GetLocKs(), 1, glm::value_ptr(subMesh.material->GetKs()));
 		glUniform1f(shader->GetLocNs(), subMesh.material->GetNs());
+		if (subMesh.material->GetMapKd() != nullptr) {
+			subMesh.material->GetMapKd()->Bind(GL_TEXTURE0);
+			glUniform1i(shader->GetLocMapKd(), 0);
+		}
 		// Light data.
 		if (dirLight != nullptr) {
 			glUniform3fv(shader->GetLocDirLightDir(), 1, glm::value_ptr(dirLight->GetDirection()));
@@ -307,10 +316,10 @@ void TriangleMesh::Render(
 			glUniform1f(shader->GetLocSpotLightCutoff(), spotLight->GetCutoffDeg());
 			glUniform1f(shader->GetLocSpotLightTotalWidth(), spotLight->GetTotalWidthDeg());
 		}
-
 		glUniform3fv(shader->GetLocAmbientLight(), 1, glm::value_ptr(ambientLight));
 
 		RenderSubMesh(subMesh);
+
 		shader->Unbind();
 	}
 }
@@ -321,10 +330,10 @@ void TriangleMesh::RenderSubMesh(const TriangleMesh::SubMesh& subMesh) const {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, subMesh.iboId);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, position));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, normal));
 	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, position));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, normal));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexPTN), (void*)offsetof(VertexPTN, texcoord));
 
 	glDrawElements(GL_TRIANGLES, subMesh.vertexIndices.size(), GL_UNSIGNED_INT, 0);

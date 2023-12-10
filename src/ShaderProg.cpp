@@ -143,6 +143,7 @@ PhongShadingDemoShaderProg::PhongShadingDemoShaderProg() {
     locKd = -1;
     locKs = -1;
     locNs = -1;
+    locMapKd = -1;
     locAmbientLight = -1;
     locDirLightDir = -1;
     locDirLightRadiance = -1;
@@ -168,6 +169,7 @@ void PhongShadingDemoShaderProg::GetUniformVariableLocation() {
     locKd = glGetUniformLocation(shaderProgId, "Kd");
     locKs = glGetUniformLocation(shaderProgId, "Ks");
     locNs = glGetUniformLocation(shaderProgId, "Ns");
+    locMapKd = glGetUniformLocation(shaderProgId, "mapKd");
     locDirLightDir = glGetUniformLocation(shaderProgId, "dirLightDir");
     locDirLightRadiance = glGetUniformLocation(shaderProgId, "dirLightRadiance");
     locPointLightPos = glGetUniformLocation(shaderProgId, "pointLightPos");

@@ -11,6 +11,7 @@ uniform vec3 Ka;
 uniform vec3 Kd;
 uniform vec3 Ks;
 uniform float Ns;
+uniform sampler2D mapKd;
 // Light data.
 uniform vec3 dirLightDir;
 uniform vec3 dirLightRadiance;
@@ -26,9 +27,9 @@ uniform vec3 ambientLight;
 // Camera position.
 uniform vec3 locCameraPos;
 
-// Light data.
 in vec3 fPosition;
 in vec3 fNormal;
+in vec2 fTexCoord;
 
 out vec4 FragColor;
 
@@ -37,9 +38,9 @@ vec3 Ambient(vec3 Ka, vec3 I)
     return Ka * I;
 }
 
-vec3 Diffuse(vec3 Kd, vec3 I, vec3 N, vec3 lightDir)
+vec3 Diffuse(vec3 texColor, vec3 I, vec3 N, vec3 lightDir)
 {
-    return Kd * I * max(0, dot(N, lightDir));
+    return texColor * I * max(0, dot(N, lightDir));
 }
 
 vec3 Specular(vec3 Ks, vec3 I, vec3 L, vec3 N, vec3 E, float shininess)
@@ -73,18 +74,23 @@ void main()
     // Eye vector.
     vec3 E = normalize(locCameraPos - fPosition);
 
+    // Texture color.
+    vec3 texColor = texture2D(mapKd, fTexCoord).rgb;
+    FragColor = vec4(texColor, 1.0);
+    return;
+
     // Directional light.
-    vec3 dirLight = Diffuse(Kd, dirLightRadiance, fNormal, vDirLightDir);
+    vec3 dirLight = Diffuse(texColor, dirLightRadiance, fNormal, vDirLightDir);
     dirLight += Specular(Ks, dirLightRadiance, vDirLightDir, fNormal, E, Ns);
 
     // Point light.
     vec3 P = normalize(vPointLightPos - fPosition);
-    vec3 pointLight = Diffuse(Kd, vPointLightIntensity, fNormal, P);
+    vec3 pointLight = Diffuse(texColor, vPointLightIntensity, fNormal, P);
     pointLight += Specular(Ks, vPointLightIntensity, P, fNormal, E, Ns);
 
     // Spot light.
     vec3 S = normalize(vSpotLightPos - fPosition);
-    vec3 spotLight = Diffuse(Kd, vSpotLightIntensity, fNormal, S);
+    vec3 spotLight = Diffuse(texColor, vSpotLightIntensity, fNormal, S);
     spotLight += Specular(Ks, vSpotLightIntensity, S, fNormal, E, Ns);
 
     FragColor = vec4(ambient + dirLight + pointLight + spotLight, 1.0);

@@ -36,13 +36,13 @@ public:
 	/**
 	 * @brief Render the mesh.
 	 * 
-	 * @param shaderProg The shader program to use.
-	 * @param projMat Projection matrix.
-	 * @param eyePos Eye position.
-	 * @param ambientColor Ambient color.
-	 * @param directionalLight Directional light.
-	 * @param pointLight Point light.
-	 * @param spotLight Spot light.
+	 * @param shaderProg
+	 * @param worldMatrix
+	 * @param ambientLight
+	 * @param dirLight
+	 * @param pointLight
+	 * @param spotLight
+	 * @param camera
 	*/
 	void Render(
 		const std::shared_ptr<PhongShadingDemoShaderProg>&,
@@ -97,15 +97,10 @@ private:
 	bool LoadMtllib(const std::filesystem::path&);
 
 	/**
-	 * @brief Render submesh.
-	 * @details This function is used to render a submesh.
-	 * A submesh is a part of the model that has the same
-	 * material.
+	 * @brief Render the submesh.
 	 * 
-	 * @param subMesh The submesh to render.
-	 * 
-	 * @note This function is called by Render().
-	*/
+	 * @param subMesh
+	 */
 	void RenderSubMesh(const SubMesh&) const;
 };
 

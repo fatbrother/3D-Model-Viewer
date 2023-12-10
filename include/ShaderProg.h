@@ -76,6 +76,7 @@ public:
 	GLint GetLocKd() const { return locKd; }
 	GLint GetLocKs() const { return locKs; }
 	GLint GetLocNs() const { return locNs; }
+	GLint GetLocMapKd() const { return locMapKd; }
 	GLint GetLocAmbientLight() const { return locAmbientLight; }
 	GLint GetLocDirLightDir() const { return locDirLightDir; }
 	GLint GetLocDirLightRadiance() const { return locDirLightRadiance; }
@@ -103,6 +104,7 @@ private:
 	GLint locKd;
 	GLint locKs;
 	GLint locNs;
+	GLint locMapKd;
 	// Light data.
 	GLint locAmbientLight;
 	GLint locDirLightDir;
