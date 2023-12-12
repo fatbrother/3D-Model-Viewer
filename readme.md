@@ -22,27 +22,27 @@ In this project, I implemented a simple 3D model viewer with OpenGL.
 
 The project includes:
 
-* Object loading
-* Camera control
-* Light control
-* Shader implementation
+- Object loading
+- Camera control
+- Light control
+- Shader implementation
 
 ## 1. Environment
 
 ### 1.1. Linux
 
-* OS: Linux Ubuntu 22.04
-* Compiler: g++ 11.4.0, C++20
-* Package Manager: vcpkg
-* Library: freeglut, glew, glm
+- OS: Linux Ubuntu 22.04
+- Compiler: g++ 11.4.0, C++20
+- Package Manager: vcpkg
+- Library: freeglut, glew, glm
 
 ### 1.2. Windows
 
-* OS: Windows 11
-* Shell: PowerShell 7.2.1
-* Compiler: MSVC, C++20
-* Package Manager: vcpkg
-* Library: freeglut, glew, glm
+- OS: Windows 11
+- Shell: PowerShell 7.2.1
+- Compiler: MSVC, C++20
+- Package Manager: vcpkg
+- Library: freeglut, glew, glm
 
 ## 2. Build & Run
 
