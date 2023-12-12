@@ -81,6 +81,7 @@ struct ScreenManager::Impl {
     int height;
     Clock clock;
     std::vector<std::string> objNames;
+    std::vector<std::string> skyboxNames;
     std::shared_ptr<FillColorShaderProg> fillColorShader;
     std::shared_ptr<PhongShadingDemoShaderProg> phongShader;
     std::shared_ptr<SkyboxShaderProg> skyboxShader;
@@ -117,12 +118,13 @@ void ScreenManager::Start(int argc, char** argv) {
     }
 
     // Initialization.
-    SetupModels();
+    SetupFilesystem();
     SetupRenderState();
     SetupLights();
     SetupCamera();
     SetupShaderLib();
-    SetupSkybox("textures/photostudio_02_2k.png");
+    SetupMenu();
+    SetupSkybox(0);
     SetupScene(0);
 
     // Register callback functions.
@@ -131,8 +133,6 @@ void ScreenManager::Start(int argc, char** argv) {
     glutReshapeFunc([](int w, int h) { GetInstance()->ReshapeCB(w, h); });
     glutSpecialFunc([](int key, int x, int y) { GetInstance()->ProcessSpecialKeysCB(key, x, y); });
     glutKeyboardFunc([](unsigned char key, int x, int y) { GetInstance()->ProcessKeysCB(key, x, y); });
-
-    SetupMenu();
 
     // Start rendering loop.
     glutMainLoop();
@@ -292,7 +292,7 @@ void ScreenManager::ProcessKeysCB(unsigned char key, int x, int y) {
     }
 }
 
-void ScreenManager::SetupModels() {
+void ScreenManager::SetupFilesystem() {
     // Load all obj files in the models directory.
     for (const auto& entry : std::filesystem::directory_iterator("models")) {
         if (entry.is_directory()) {
@@ -311,6 +311,13 @@ void ScreenManager::SetupModels() {
         }
     }
     std::swap(pImpl->objNames[0], pImpl->objNames[minIndex]);
+
+    // Load all skybox textures in the textures directory.
+    for (const auto& entry : std::filesystem::directory_iterator("textures")) {
+        if (entry.is_regular_file()) {
+            pImpl->skyboxNames.push_back(entry.path().filename().string());
+        }
+    }
 }
 
 void ScreenManager::SetupRenderState() {
@@ -383,10 +390,11 @@ void ScreenManager::SetupCamera() {
     pImpl->camera->UpdateProjection();
 }
 
-void ScreenManager::SetupSkybox(std::filesystem::path skyboxDir) {
+void ScreenManager::SetupSkybox(int skyboxIndex) {
     const int numSlices = 36;
     const int numStacks = 18;
     const float radius = 50.0f;
+    auto skyboxDir = std::filesystem::path("textures") / pImpl->skyboxNames[skyboxIndex];
     pImpl->skybox = std::make_shared<Skybox>(skyboxDir, numSlices, numStacks, radius);
 }
 
@@ -411,9 +419,9 @@ void ScreenManager::SetupShaderLib() {
 
 void ScreenManager::SetupMenu() {
     int skyboxMenu = glutCreateMenu([](int value) { GetInstance()->SkyboxMenuCB(value); });
-    glutAddMenuEntry("Photostudio", 1);
-    glutAddMenuEntry("Sunflowers", 2);
-    glutAddMenuEntry("Veranda", 3);
+    for (int i = 0; i < pImpl->skyboxNames.size(); i++) {
+        glutAddMenuEntry(pImpl->skyboxNames[i].c_str(), i + 1);
+    }
 
     int objMenu = glutCreateMenu([](int value) { GetInstance()->ObjectMenuCB(value); });
     for (int i = 0; i < pImpl->objNames.size(); i++) {
@@ -435,19 +443,7 @@ void ScreenManager::ObjectMenuCB(int value) {
 }
 
 void ScreenManager::SkyboxMenuCB(int value) {
-    switch (value) {
-    case 1:
-        SetupSkybox("textures/photostudio_02_2k.png");
-        break;
-    case 2:
-        SetupSkybox("textures/sunflowers_2k.png");
-        break;
-    case 3:
-        SetupSkybox("textures/veranda_2k.png");
-        break;
-    default:
-        break;
-    }
+    SetupSkybox(value - 1);
 }
 
 } // namespace opengl_homework

@@ -77,8 +77,7 @@ int TriangleMesh::GetNumTriangles() const {
 
 // Desc: Get the number of indices.
 int TriangleMesh::GetNumIndices() const {
-	// return pImpl->vertexIndices.size();
-	return 0;
+	return pImpl->numTriangles * 3;
 }
 
 // Desc: Get the center of the model.

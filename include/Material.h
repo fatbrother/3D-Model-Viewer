@@ -17,7 +17,7 @@ public:
 	void SetName(const std::string mtlName) { name = mtlName; }
 	std::string GetName() const { return name; }
 
-protected:	
+protected:
 	// Material Protected Data.
 	std::string name;
 };

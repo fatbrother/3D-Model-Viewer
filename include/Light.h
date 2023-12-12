@@ -27,9 +27,9 @@ public:
 		CreateVisGeometry();
 	}
 
-	glm::vec3 GetPosition() const  { return position;  }
+	glm::vec3 GetPosition() const { return position; }
 	glm::vec3 GetIntensity() const { return intensity; }
-	
+
 	void Draw() {
 		glPointSize(16.0f);
 		glEnableVertexAttribArray(0);
@@ -40,10 +40,10 @@ public:
 		glPointSize(1.0f);
 	}
 
-	void MoveLeft (const float moveSpeed) { position += moveSpeed * glm::vec3(-0.1f,  0.0f, 0.0f); }
-	void MoveRight(const float moveSpeed) { position += moveSpeed * glm::vec3( 0.1f,  0.0f, 0.0f); }
-	void MoveUp   (const float moveSpeed) { position += moveSpeed * glm::vec3( 0.0f,  0.1f, 0.0f); }
-	void MoveDown (const float moveSpeed) { position += moveSpeed * glm::vec3( 0.0f, -0.1f, 0.0f); }
+	void MoveLeft(const float moveSpeed) { position += moveSpeed * glm::vec3(-0.1f, 0.0f, 0.0f); }
+	void MoveRight(const float moveSpeed) { position += moveSpeed * glm::vec3(0.1f, 0.0f, 0.0f); }
+	void MoveUp(const float moveSpeed) { position += moveSpeed * glm::vec3(0.0f, 0.1f, 0.0f); }
+	void MoveDown(const float moveSpeed) { position += moveSpeed * glm::vec3(0.0f, -0.1f, 0.0f); }
 
 protected:
 	// PointLight Protect Methods.
@@ -74,7 +74,7 @@ public:
 		totalWidthDeg = 60.0f;										// Default total width angle: 60 degrees.
 		CreateVisGeometry();
 	}
-	
+
 	SpotLight(const glm::vec3 p, const glm::vec3 I, const glm::vec3 D, const float cutoffDeg, const float totalWidthDeg) {
 		position = p;
 		intensity = I;
@@ -110,7 +110,7 @@ public:
 	}
 
 	glm::vec3 GetDirection() const { return direction; }
-	glm::vec3 GetRadiance()  const { return radiance;  }
+	glm::vec3 GetRadiance()  const { return radiance; }
 
 private:
 	// DirectionalLight Private Data.

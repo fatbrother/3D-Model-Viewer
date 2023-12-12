@@ -35,13 +35,13 @@ private:
 
     int CalculateFrameRate();
 
-    void SetupModels();
+    void SetupFilesystem();
     void SetupRenderState();
     void SetupScene(int);
     void SetupShaderLib();
     void SetupLights();
     void SetupCamera();
-    void SetupSkybox(std::filesystem::path);
+    void SetupSkybox(int);
     void SetupMenu();
 
     void ReshapeCB(int, int);
