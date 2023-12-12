@@ -81,7 +81,6 @@ struct ScreenManager::Impl {
     int height;
     Clock clock;
     std::vector<std::string> objNames;
-    std::vector<MeshPtr> meshes;
     std::shared_ptr<FillColorShaderProg> fillColorShader;
     std::shared_ptr<PhongShadingDemoShaderProg> phongShader;
     std::shared_ptr<SkyboxShaderProg> skyboxShader;
@@ -312,26 +311,6 @@ void ScreenManager::SetupModels() {
         }
     }
     std::swap(pImpl->objNames[0], pImpl->objNames[minIndex]);
-    // Load all obj files.
-    auto objBasePath = std::filesystem::path("models");
-    pImpl->meshes.resize(pImpl->objNames.size());
-
-    // Load first model in the main thread.
-    auto firstFilePath = objBasePath / pImpl->objNames[0] / (pImpl->objNames[0] + ".obj");
-    pImpl->meshes[0] = std::make_shared<TriangleMesh>(firstFilePath, true);
-
-    auto threadFunc = [](
-        int i,
-        const std::filesystem::path& objBasePath,
-        const std::vector<std::string>& objNames,
-        std::vector<MeshPtr>& meshes) {
-            auto objFilePath = objBasePath / objNames[i] / (objNames[i] + ".obj");
-            meshes[i] = std::make_shared<TriangleMesh>(objFilePath, true);
-        };
-    for (int i = 1; i < pImpl->objNames.size(); i++) {
-        std::thread thread(threadFunc, i, objBasePath, pImpl->objNames, std::ref(pImpl->meshes));
-        thread.detach();
-    }
 }
 
 void ScreenManager::SetupRenderState() {
@@ -354,7 +333,9 @@ void ScreenManager::SetupScene(int objIndex) {
     if (pImpl->sceneObj->mesh != nullptr) {
         pImpl->sceneObj->mesh->ReleaseBuffers();
     }
-    pImpl->sceneObj->mesh = pImpl->meshes[objIndex];
+    auto objBasePath = std::filesystem::path("models");
+    auto objFilePath = objBasePath / pImpl->objNames[objIndex] / (pImpl->objNames[objIndex] + ".obj");
+    pImpl->sceneObj->mesh = std::make_shared<TriangleMesh>(objFilePath, true);
     pImpl->sceneObj->mesh->CreateBuffers();
 
     pImpl->sceneObj->mesh->PrintMeshInfo();

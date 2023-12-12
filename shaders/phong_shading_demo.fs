@@ -76,8 +76,6 @@ void main()
 
     // Texture color.
     vec3 texColor = texture2D(mapKd, fTexCoord).rgb;
-    FragColor = vec4(texColor, 1.0);
-    return;
 
     // Directional light.
     vec3 dirLight = Diffuse(texColor, dirLightRadiance, fNormal, vDirLightDir);
