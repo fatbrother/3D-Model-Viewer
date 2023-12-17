@@ -77,19 +77,21 @@ void main()
     // Texture color.
     vec3 texColor = texture2D(mapKd, fTexCoord).rgb;
 
+    vec3 N = normalize(fNormal);
+
     // Directional light.
-    vec3 dirLight = Diffuse(texColor, dirLightRadiance, fNormal, vDirLightDir);
-    dirLight += Specular(Ks, dirLightRadiance, vDirLightDir, fNormal, E, Ns);
+    vec3 dirLight = Diffuse(texColor, dirLightRadiance, N, vDirLightDir);
+    dirLight += Specular(Ks, dirLightRadiance, vDirLightDir, N, E, Ns);
 
     // Point light.
     vec3 P = normalize(vPointLightPos - fPosition);
-    vec3 pointLight = Diffuse(texColor, vPointLightIntensity, fNormal, P);
-    pointLight += Specular(Ks, vPointLightIntensity, P, fNormal, E, Ns);
+    vec3 pointLight = Diffuse(texColor, vPointLightIntensity, N, P);
+    pointLight += Specular(Ks, vPointLightIntensity, P, N, E, Ns);
 
     // Spot light.
     vec3 S = normalize(vSpotLightPos - fPosition);
-    vec3 spotLight = Diffuse(texColor, vSpotLightIntensity, fNormal, S);
-    spotLight += Specular(Ks, vSpotLightIntensity, S, fNormal, E, Ns);
+    vec3 spotLight = Diffuse(texColor, vSpotLightIntensity, N, S);
+    spotLight += Specular(Ks, vSpotLightIntensity, S, N, E, Ns);
 
     FragColor = vec4(ambient + dirLight + pointLight + spotLight, 1.0);
 }
