@@ -75,7 +75,9 @@ void main()
     vec3 E = normalize(locCameraPos - fPosition);
 
     // Texture color.
-    vec3 texColor = texture2D(mapKd, fTexCoord).rgb;
+    vec3 texColor = texture(mapKd, fTexCoord).rgb;
+    if (texColor == vec3(0.0))
+        texColor = Kd;
 
     vec3 N = normalize(fNormal);
 
