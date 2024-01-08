@@ -1,6 +1,6 @@
 # OpenGL HW
 
-![Bunny](./images/HW2/bunny.png)
+![Bunny](./images/HW3/ivysaur.png)
 
 - [OpenGL HW](#opengl-hw)
   - [0. Introduction](#0-introduction)

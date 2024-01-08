@@ -1,50 +1,93 @@
 # Changelog
 
-## [2.2] - 2023-12-26
+## [3.2] - 2024-1-5
+
+### Fixed
+
+- Null mapKd situation
+
+## [3.1] - 2023-12-20
+
+### Fixed
+
+- Memory leak
+- fNormal calculation
+
+## [3.0] - 2023-12-9
+
 ### Added
+
+- Clock class
+- Implement texture mapping
+
+### Fixed
+
+- view transform
+
+### Added
+
 - Added fps counter
 
 ### Changed
+
 - Use clamp instead of min/max for color values
 
 ## [2.1] - 2023-12-20
+
 ### Added
+
 - Face culling for back faces
 - Changelog
 
 ## [2.0] - 2023-12-19
+
 ### Added
+
 - Complete phong shading
 - Spot light
 
 ### Changed
+
 - Scene struct update
 
 ## [1.7] - 2023-11-16
+
 ### Added
+
 - Added CI/CD pipeline with github actions
 
 ## [1.5] - 2023-11-10
+
 ### Added
+
 - Added fixed color shader
 
 ## [1.3] - 2023-10-12
+
 ### Changed
+
 - Refactored project structure
 
 ## [1.2] - 2023-10-03
+
 ### Added
+
 - Set up environment for windows
 
 ## [1.1] - 2023-10-02
+
 ### Fixed
+
 - Fixed wrong extents calculation
 
 ## [1.0] - 2023-09-27
+
 ### Added
+
 - Implemented object loader
 - Wrote documentation for the project
 - Add menu to the application
 
 ### Changed
+
 - Refactored project structure
