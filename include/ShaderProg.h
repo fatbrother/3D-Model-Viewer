@@ -23,7 +23,7 @@ public:
 
 protected:
 	// ShaderProg Protected Methods.
-	virtual void GetUniformVariableLocation();
+	virtual void GetUniformVariableLocation() = 0;
 
 	// ShaderProg Protected Data.
 	GLuint shaderProgId;
@@ -51,7 +51,7 @@ public:
 
 protected:
 	// FillColorShaderProg Protected Methods.
-	void GetUniformVariableLocation();
+	void GetUniformVariableLocation() override;
 
 private:
 	// FillColorShaderProg Private Data.
@@ -90,7 +90,7 @@ public:
 
 protected:
 	// PhongShadingDemoShaderProg Protected Methods.
-	void GetUniformVariableLocation();
+	void GetUniformVariableLocation() override;
 
 private:
 	// PhongShadingDemoShaderProg Public Data.
@@ -132,7 +132,7 @@ public:
 
 protected:
 	// PhongShadingDemoShaderProg Protected Methods.
-	void GetUniformVariableLocation();
+	void GetUniformVariableLocation() override;
 
 private:
 	// SkyboxShaderProg Public Data.
